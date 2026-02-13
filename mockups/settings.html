@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocsTown — Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFDF5;
+    --fg: #1E293B;
+    --muted: #F1F5F9;
+    --muted-fg: #64748B;
+    --accent: #8B5CF6;
+    --accent-fg: #FFFFFF;
+    --secondary: #F472B6;
+    --tertiary: #FBBF24;
+    --quaternary: #34D399;
+    --border-color: #E2E8F0;
+    --card: #FFFFFF;
+    --border: 2px solid var(--fg);
+    --shadow: 4px 4px 0px var(--fg);
+    --shadow-hover: 6px 6px 0px var(--fg);
+    --shadow-active: 2px 2px 0px var(--fg);
+    --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --danger: #EF4444;
+    --danger-light: #FEF2F2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Outfit', system-ui, sans-serif;
+    line-height: 1.15;
+  }
+
+  /* ===================== */
+  /*   FLOATING SHAPES     */
+  /* ===================== */
+  .shape {
+    position: fixed;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .shape-circle {
+    border-radius: 50%;
+    border: var(--border);
+  }
+  .shape-triangle {
+    width: 0; height: 0;
+    border-left: 24px solid transparent;
+    border-right: 24px solid transparent;
+    border-bottom: 42px solid var(--tertiary);
+  }
+
+  @keyframes float1 {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-12px) rotate(4deg); }
+  }
+  @keyframes float2 {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(-3deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* ===================== */
+  /*          NAV           */
+  /* ===================== */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 48px;
+    border-bottom: var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--fg);
+  }
+  .logo-img {
+    height: 65px;
+    width: auto;
+  }
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 32px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  nav a {
+    text-decoration: none;
+    color: var(--fg);
+    padding: 4px 0;
+    position: relative;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: var(--accent); }
+  nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0;
+    width: 0; height: 3px;
+    background: var(--accent);
+    border-radius: 9999px;
+    transition: width 0.3s var(--bounce);
+  }
+  nav a:hover::after { width: 100%; }
+  nav a.active {
+    color: var(--accent);
+  }
+  nav a.active::after {
+    width: 100%;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .nav-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .nav-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: var(--border);
+    object-fit: cover;
+  }
+  .nav-signout {
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted-fg);
+    text-decoration: none;
+    padding: 6px 14px;
+    border: 2px solid var(--border-color);
+    border-radius: 9999px;
+    transition: all 0.2s;
+  }
+  .nav-signout:hover {
+    color: var(--danger);
+    border-color: var(--danger);
+  }
+
+  /* ===================== */
+  /*     SUCCESS TOAST      */
+  /* ===================== */
+  .toast {
+    position: fixed;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    background: #ECFDF5;
+    border: var(--border);
+    border-radius: 12px;
+    padding: 14px 28px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #065F46;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: toastIn 0.5s var(--bounce);
+  }
+  .toast-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--quaternary);
+    border: 2px solid var(--fg);
+    flex-shrink: 0;
+  }
+  @keyframes toastIn {
+    0% { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(0.9); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  }
+
+  /* ===================== */
+  /*     PAGE HEADER        */
+  /* ===================== */
+  .page-header {
+    padding: 48px 48px 0;
+    max-width: 740px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .section-tag-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .page-title {
+    font-size: clamp(32px, 4vw, 44px);
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .page-subtitle {
+    font-size: 17px;
+    color: var(--muted-fg);
+    font-weight: 400;
+    margin-bottom: 0;
+  }
+
+  /* ===================== */
+  /*    SETTINGS LAYOUT     */
+  /* ===================== */
+  .settings {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 32px 48px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===================== */
+  /*    SETTINGS CARDS      */
+  /* ===================== */
+  .card {
+    background: var(--card);
+    border: var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s var(--bounce);
+  }
+  .card:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0px var(--fg);
+  }
+  .card-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-title-emoji {
+    font-size: 22px;
+  }
+
+  /* ===================== */
+  /*     PROFILE CARD       */
+  /* ===================== */
+  .profile-info {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: var(--border);
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 3px 3px 0px var(--fg);
+  }
+  .profile-details {
+    flex: 1;
+  }
+  .profile-username {
+    font-family: 'Outfit', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .profile-meta {
+    font-size: 14px;
+    color: var(--muted-fg);
+    margin-bottom: 12px;
+  }
+  .profile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #065F46;
+    background: #ECFDF5;
+    border: 2px solid var(--quaternary);
+    border-radius: 9999px;
+    padding: 6px 16px;
+  }
+  .profile-note {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--muted-fg);
+    font-style: italic;
+  }
+
+  /* ===================== */
+  /*     FORM ELEMENTS      */
+  /* ===================== */
+  .form-group {
+    margin-bottom: 0;
+  }
+  .form-label {
+    display: block;
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--fg);
+    margin-bottom: 10px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 14px 18px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px;
+    color: var(--fg);
+    background: var(--card);
+    border: 2px solid #CBD5E1;
+    border-radius: 16px;
+    outline: none;
+    transition: all 0.3s var(--bounce);
+  }
+  .form-input:focus {
+    border-color: var(--accent);
+    box-shadow: 4px 4px 0px var(--accent);
+  }
+  .form-input::placeholder {
+    color: var(--muted-fg);
+  }
+
+  .email-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+  .email-row .form-group {
+    flex: 1;
+  }
+
+  /* ===================== */
+  /*       BUTTONS          */
+  /* ===================== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 12px 24px;
+    border: var(--border);
+    border-radius: 9999px;
+    text-decoration: none;
+    color: var(--fg);
+    cursor: pointer;
+    transition: all 0.3s var(--bounce);
+    box-shadow: var(--shadow);
+    background: var(--bg);
+  }
+  .btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-hover);
+  }
+  .btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-active);
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+  .btn-sm {
+    font-size: 13px;
+    padding: 10px 20px;
+  }
+  .btn-outline-danger {
+    background: transparent;
+    color: var(--danger);
+    border-color: var(--danger);
+    box-shadow: 4px 4px 0px var(--danger);
+  }
+  .btn-outline-danger:hover {
+    background: var(--danger);
+    color: white;
+    box-shadow: 6px 6px 0px #B91C1C;
+  }
+  .btn-outline-danger:active {
+    box-shadow: 2px 2px 0px #B91C1C;
+  }
+
+  /* ===================== */
+  /*    TOGGLE SWITCH       */
+  /* ===================== */
+  .toggle-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .toggle-text {
+    flex: 1;
+  }
+  .toggle-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .toggle-description {
+    font-size: 14px;
+    color: var(--muted-fg);
+    line-height: 1.55;
+  }
+
+  .toggle-switch {
+    position: relative;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+  .toggle-track {
+    display: block;
+    width: 56px;
+    height: 30px;
+    background: #CBD5E1;
+    border: var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s var(--bounce);
+  }
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: var(--card);
+    border: 2px solid var(--fg);
+    border-radius: 50%;
+    transition: all 0.3s var(--bounce);
+    box-shadow: 1px 1px 0px var(--fg);
+  }
+  .toggle-switch input:checked + .toggle-track {
+    background: var(--accent);
+  }
+  .toggle-switch input:checked + .toggle-track::after {
+    left: 29px;
+    background: var(--card);
+  }
+  .toggle-switch input:focus-visible + .toggle-track {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* ===================== */
+  /*   WHAT'S INCLUDED      */
+  /* ===================== */
+  .included-list {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 2px dashed var(--border-color);
+  }
+  .included-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted-fg);
+    margin-bottom: 14px;
+  }
+  .included-items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .included-items li {
+    font-size: 14px;
+    color: var(--muted-fg);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .included-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .included-dot.violet { background: var(--accent); }
+  .included-dot.pink { background: var(--secondary); }
+  .included-dot.green { background: var(--quaternary); }
+
+  /* ===================== */
+  /*     DANGER ZONE        */
+  /* ===================== */
+  .card-danger {
+    border-color: #FCA5A5;
+    background: var(--danger-light);
+  }
+  .card-danger:hover {
+    box-shadow: 5px 5px 0px #FCA5A5;
+  }
+  .card-danger .card-title {
+    color: var(--danger);
+  }
+  .danger-note {
+    font-size: 14px;
+    color: var(--muted-fg);
+    line-height: 1.55;
+    margin-bottom: 20px;
+  }
+
+  /* ===================== */
+  /*    SAVE CHANGES BTN    */
+  /* ===================== */
+  .save-row {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* ===================== */
+  /*        FOOTER          */
+  /* ===================== */
+  footer {
+    padding: 32px 48px;
+    background: var(--fg);
+    color: rgba(255,255,255,0.6);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    border-top: var(--border);
+  }
+  footer .logo { color: var(--bg); font-size: 20px; }
+  footer a {
+    color: var(--tertiary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  footer a:hover { color: var(--accent); }
+
+  /* ===================== */
+  /*      RESPONSIVE        */
+  /* ===================== */
+  @media (max-width: 900px) {
+    nav { padding: 14px 24px; }
+    nav ul { display: none; }
+    .page-header { padding: 36px 24px 0; }
+    .settings { padding: 24px 24px 64px; }
+    footer { padding: 24px; }
+  }
+  @media (max-width: 600px) {
+    .card {
+      padding: 24px 20px;
+      box-shadow: 2px 2px 0px var(--fg);
+    }
+    .card:hover {
+      box-shadow: 3px 3px 0px var(--fg);
+    }
+    .card-danger:hover {
+      box-shadow: 3px 3px 0px #FCA5A5;
+    }
+    .profile-info {
+      flex-direction: column;
+      text-align: center;
+    }
+    .profile-badge {
+      margin: 0 auto;
+    }
+    .profile-note {
+      text-align: center;
+    }
+    .email-row {
+      flex-direction: column;
+    }
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+    .btn-sm {
+      width: auto;
+    }
+    .save-row {
+      justify-content: stretch;
+    }
+    .save-row .btn {
+      width: 100%;
+    }
+    .toggle-row {
+      flex-direction: column;
+    }
+    .toggle-switch {
+      align-self: flex-start;
+    }
+    .toast {
+      left: 16px;
+      right: 16px;
+      transform: none;
+      font-size: 14px;
+    }
+    @keyframes toastIn {
+      0% { opacity: 0; transform: translateY(-20px) scale(0.9); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- FLOATING DECORATIVE SHAPES -->
+<div class="shape shape-circle" style="width:60px;height:60px;background:rgba(139,92,246,0.1);top:140px;right:6%;animation:float1 5s ease-in-out infinite;"></div>
+<div class="shape shape-triangle" style="top:320px;left:4%;animation:float2 6s ease-in-out infinite;"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="landing.html" class="logo">
+    <img src="docstown_logo.png" alt="DocsTown" class="logo-img">
+  </a>
+  <ul>
+    <li><a href="tasks-index.html">Tasks</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="settings.html" class="active">Settings</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-user">
+      <img src="https://avatars.githubusercontent.com/u/583231?v=4" alt="octocat" class="nav-avatar">
+      <span>octocat</span>
+    </div>
+    <a href="#" class="nav-signout">Sign Out</a>
+  </div>
+</nav>
+
+<!-- SUCCESS TOAST -->
+<div class="toast" id="success-toast">
+  <span class="toast-dot"></span>
+  Settings saved successfully
+</div>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="section-tag"><span class="section-tag-dot"></span> Settings</div>
+  <h1 class="page-title">Your Preferences</h1>
+  <p class="page-subtitle">Manage your account and notification settings.</p>
+</div>
+
+<!-- SETTINGS -->
+<div class="settings">
+
+  <!-- PROFILE CARD -->
+  <div class="card">
+    <div class="card-title">
+      <span class="card-title-emoji">&#x1F464;</span> Profile
+    </div>
+    <div class="profile-info">
+      <img src="https://avatars.githubusercontent.com/u/583231?v=4" alt="octocat" class="profile-avatar">
+      <div class="profile-details">
+        <div class="profile-username">octocat</div>
+        <div class="profile-meta">Member since January 2026</div>
+        <div class="profile-badge">&#x2713; Connected via GitHub</div>
+      </div>
+    </div>
+    <div class="profile-note">Profile info syncs from your GitHub account</div>
+  </div>
+
+  <!-- EMAIL CARD -->
+  <div class="card">
+    <div class="card-title">
+      <span class="card-title-emoji">&#x2709;&#xFE0F;</span> Email
+    </div>
+    <div class="email-row">
+      <div class="form-group">
+        <label class="form-label" for="email">Email Address</label>
+        <input type="email" id="email" class="form-input" value="octocat@github.com">
+      </div>
+      <button class="btn btn-sm" type="button">Save</button>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS CARD -->
+  <div class="card">
+    <div class="card-title">
+      <span class="card-title-emoji">&#x1F514;</span> Notifications
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-text">
+        <div class="toggle-label">Weekly Digest Email</div>
+        <div class="toggle-description">Receive a summary of new documentation tasks, vote results, and merged PRs every Monday.</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" checked>
+        <span class="toggle-track"></span>
+      </label>
+    </div>
+    <div class="included-list">
+      <div class="included-title">What's Included</div>
+      <ul class="included-items">
+        <li><span class="included-dot violet"></span> New tasks available for voting</li>
+        <li><span class="included-dot pink"></span> Tasks nearing consensus</li>
+        <li><span class="included-dot green"></span> PRs submitted and merged</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- DANGER ZONE -->
+  <div class="card card-danger">
+    <div class="card-title">
+      <span class="card-title-emoji">&#x26A0;&#xFE0F;</span> Danger Zone
+    </div>
+    <p class="danger-note">This will remove your account and all voting history. This action cannot be undone.</p>
+    <button class="btn btn-outline-danger" type="button">Delete Account</button>
+  </div>
+
+  <!-- SAVE CHANGES -->
+  <div class="save-row">
+    <button class="btn btn-primary" type="button">Save Changes <span style="margin-left:4px;">&#8594;</span></button>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="logo">DocsTown</div>
+    <span style="opacity:0.4;">&copy; 2026</span>
+  </div>
+  <div>Crafted by: <a href="https://x.com/c_sonnier" target="_blank" rel="noopener">@c_sonnier</a></div>
+</footer>
+
+<script>
+  // Auto-dismiss toast after 4 seconds
+  const toast = document.getElementById('success-toast');
+  setTimeout(() => {
+    toast.style.transition = 'opacity 0.4s, transform 0.4s';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(-10px)';
+    setTimeout(() => toast.remove(), 400);
+  }, 4000);
+</script>
+
+</body>
+</html>

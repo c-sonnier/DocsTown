@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Review — DocsTown</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFDF5;
+    --fg: #1E293B;
+    --muted: #F1F5F9;
+    --muted-fg: #64748B;
+    --accent: #8B5CF6;
+    --accent-fg: #FFFFFF;
+    --secondary: #F472B6;
+    --tertiary: #FBBF24;
+    --quaternary: #34D399;
+    --border-color: #E2E8F0;
+    --card: #FFFFFF;
+    --border: 2px solid var(--fg);
+    --shadow: 4px 4px 0px var(--fg);
+    --shadow-hover: 6px 6px 0px var(--fg);
+    --shadow-active: 2px 2px 0px var(--fg);
+    --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --danger: #EF4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Outfit', system-ui, sans-serif;
+    line-height: 1.15;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* ===================== */
+  /*      FLOATING SHAPES  */
+  /* ===================== */
+  .shape {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .shape-circle {
+    border-radius: 50%;
+  }
+
+  @keyframes float1 {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(5deg); }
+  }
+  @keyframes float2 {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(-4deg); }
+  }
+
+  /* ===================== */
+  /*          NAV           */
+  /* ===================== */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 48px;
+    height: 64px;
+    border-bottom: var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-top: 3px solid var(--tertiary);
+  }
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+  }
+  .logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--fg);
+  }
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    border: 2px solid var(--fg);
+    box-shadow: 2px 2px 0px var(--fg);
+  }
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 28px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--muted-fg);
+    padding: 4px 0;
+    position: relative;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--fg); }
+  .nav-links a.active {
+    color: var(--fg);
+  }
+  .nav-links a.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 9999px;
+  }
+  .nav-admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--tertiary);
+    color: var(--fg);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1.5px solid var(--fg);
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .nav-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--fg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .nav-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--fg);
+  }
+  .nav-signout {
+    font-size: 13px;
+    color: var(--muted-fg);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav-signout:hover { color: var(--danger); }
+
+  /* ===================== */
+  /*       BREADCRUMB       */
+  /* ===================== */
+  .breadcrumb {
+    padding: 16px 48px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    color: var(--muted-fg);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--muted);
+  }
+  .breadcrumb a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb .sep { margin: 0 8px; color: var(--border-color); }
+  .breadcrumb .current {
+    color: var(--fg);
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  /* ===================== */
+  /*       MAIN LAYOUT      */
+  /* ===================== */
+  .page-content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 36px 48px 120px;
+    position: relative;
+  }
+
+  /* ===================== */
+  /*     TASK OVERVIEW      */
+  /* ===================== */
+  .task-overview {
+    background: var(--card);
+    border: var(--border);
+    border-radius: 20px;
+    padding: 32px 36px;
+    box-shadow: var(--shadow);
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .task-overview-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    border: 2px solid var(--fg);
+    box-shadow: 2px 2px 0px var(--fg);
+  }
+  .status-pending-review {
+    background: var(--tertiary);
+    color: var(--fg);
+  }
+  .task-method {
+    font-family: 'Outfit', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .task-method code {
+    background: #F3EEFF;
+    padding: 2px 12px;
+    border-radius: 10px;
+    color: var(--accent);
+    font-size: 28px;
+  }
+  .task-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--muted-fg);
+  }
+  .task-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .task-meta-icon {
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .task-meta code {
+    background: var(--muted);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--fg);
+  }
+  .task-meta strong {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  /* ===================== */
+  /*    VOTE BREAKDOWN      */
+  /* ===================== */
+  .vote-section {
+    background: var(--card);
+    border: var(--border);
+    border-radius: 20px;
+    padding: 28px 36px;
+    box-shadow: var(--shadow);
+    margin-bottom: 32px;
+  }
+  .section-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted-fg);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .vote-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .vote-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .vote-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    width: 100px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .vote-label-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+    border: var(--border);
+    color: white;
+  }
+  .vote-label-pill.version-a { background: var(--accent); }
+  .vote-label-pill.version-b { background: var(--secondary); }
+  .vote-label-pill.version-c { background: var(--tertiary); color: var(--fg); }
+  .vote-bar-track {
+    flex: 1;
+    height: 36px;
+    background: var(--muted);
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    overflow: hidden;
+    position: relative;
+  }
+  .vote-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    padding-left: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    transition: width 1s var(--bounce);
+  }
+  .vote-bar-fill.version-a { background: var(--accent); }
+  .vote-bar-fill.version-b { background: var(--secondary); }
+  .vote-bar-fill.version-c { background: var(--tertiary); color: var(--fg); }
+  .vote-count-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    width: 90px;
+    flex-shrink: 0;
+    text-align: right;
+    color: var(--muted-fg);
+  }
+  .winner-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--quaternary);
+    color: var(--fg);
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    border: 1.5px solid var(--fg);
+    margin-left: 8px;
+  }
+
+  /* ===================== */
+  /*    WINNING PREVIEW     */
+  /* ===================== */
+  .winning-doc {
+    background: var(--card);
+    border: var(--border);
+    border-left: 6px solid var(--accent);
+    border-radius: 20px;
+    padding: 32px 36px;
+    box-shadow: var(--shadow);
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .winning-doc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent);
+    color: white;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    border: 2px solid var(--fg);
+    box-shadow: 2px 2px 0px var(--fg);
+    margin-bottom: 24px;
+  }
+  .rdoc-content {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--fg);
+  }
+  .rdoc-content h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 24px;
+    margin-bottom: 10px;
+    color: var(--fg);
+  }
+  .rdoc-content h3:first-child { margin-top: 0; }
+  .rdoc-content p {
+    margin-bottom: 14px;
+    color: var(--fg);
+  }
+  .rdoc-content .method-sig {
+    font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+    background: #F3EEFF;
+    padding: 8px 16px;
+    border-radius: 10px;
+    display: inline-block;
+    margin-bottom: 16px;
+    border: 1.5px solid rgba(139, 92, 246, 0.3);
+  }
+  .rdoc-content .param-list {
+    margin: 12px 0 16px 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rdoc-content .param-list li {
+    padding: 6px 0 6px 20px;
+    position: relative;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .rdoc-content .param-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 14px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .rdoc-content .param-list code {
+    background: #F3EEFF;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--accent);
+  }
+  .rdoc-content .return-value {
+    background: var(--muted);
+    border: 1.5px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  .rdoc-content .return-value code {
+    background: #F3EEFF;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--accent);
+  }
+  .rdoc-code-block {
+    background: var(--fg);
+    color: #E2E8F0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-x: auto;
+    margin: 16px 0;
+    border: 2px solid var(--fg);
+    box-shadow: 3px 3px 0px rgba(30, 41, 59, 0.3);
+  }
+  .rdoc-code-block .comment { color: var(--muted-fg); }
+  .rdoc-code-block .keyword { color: var(--secondary); }
+  .rdoc-code-block .string { color: var(--quaternary); }
+  .rdoc-code-block .method { color: var(--tertiary); }
+  .rdoc-content .see-also {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1.5px dashed var(--border-color);
+    font-size: 14px;
+    color: var(--muted-fg);
+  }
+  .rdoc-content .see-also a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .rdoc-content .see-also a:hover { text-decoration: underline; }
+
+  /* ===================== */
+  /*   ALL VERSIONS         */
+  /* ===================== */
+  .all-versions {
+    background: var(--card);
+    border: var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+  .all-versions-header {
+    padding: 20px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    border-bottom: 2px solid var(--border-color);
+    transition: background 0.2s;
+    user-select: none;
+  }
+  .all-versions-header:hover {
+    background: var(--muted);
+  }
+  .all-versions-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toggle-icon {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--muted-fg);
+    transition: transform 0.3s var(--bounce);
+  }
+  .all-versions-header.open .toggle-icon {
+    transform: rotate(180deg);
+  }
+  .all-versions-body {
+    display: none;
+    padding: 24px 36px;
+  }
+  .all-versions-body.open {
+    display: block;
+  }
+  .versions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .version-card {
+    border: var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s var(--bounce);
+  }
+  .version-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow);
+  }
+  .version-card-header {
+    padding: 12px 16px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--border);
+  }
+  .version-card-header.version-a-header { background: var(--accent); color: white; }
+  .version-card-header.version-b-header { background: var(--secondary); color: white; }
+  .version-card-header.version-c-header { background: var(--tertiary); color: var(--fg); }
+  .version-card-votes {
+    font-size: 12px;
+    font-weight: 700;
+    opacity: 0.85;
+  }
+  .version-card-body {
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted-fg);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .version-card-body code {
+    background: #F3EEFF;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  /* ===================== */
+  /*   COMMUNITY FEEDBACK   */
+  /* ===================== */
+  .feedback-section {
+    background: var(--card);
+    border: var(--border);
+    border-radius: 20px;
+    padding: 28px 36px;
+    box-shadow: var(--shadow);
+    margin-bottom: 32px;
+  }
+  .feedback-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .feedback-item {
+    display: flex;
+    gap: 14px;
+    padding-bottom: 20px;
+    border-bottom: 1.5px solid var(--border-color);
+  }
+  .feedback-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .feedback-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--fg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: white;
+    flex-shrink: 0;
+  }
+  .feedback-avatar.a1 { background: var(--accent); }
+  .feedback-avatar.a2 { background: var(--secondary); }
+  .feedback-avatar.a3 { background: var(--quaternary); }
+  .feedback-avatar.a4 { background: var(--tertiary); color: var(--fg); }
+  .feedback-body {
+    flex: 1;
+  }
+  .feedback-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .feedback-username {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fg);
+  }
+  .feedback-date {
+    font-size: 13px;
+    color: var(--muted-fg);
+  }
+  .feedback-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--fg);
+  }
+
+  /* ===================== */
+  /*    ACTION SECTION      */
+  /* ===================== */
+  .action-section {
+    background: var(--card);
+    border: var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    box-shadow: var(--shadow);
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .action-section::before {
+    content: '';
+    position: absolute;
+    width: 350px;
+    height: 350px;
+    border-radius: 50%;
+    background: var(--quaternary);
+    opacity: 0.08;
+    bottom: -120px;
+    right: -80px;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .action-section > * {
+    position: relative;
+    z-index: 1;
+  }
+  .action-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .action-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 16px 32px;
+    border: var(--border);
+    border-radius: 9999px;
+    text-decoration: none;
+    color: var(--fg);
+    cursor: pointer;
+    transition: all 0.3s var(--bounce);
+    box-shadow: var(--shadow);
+    background: var(--bg);
+  }
+  .btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-hover);
+  }
+  .btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-active);
+  }
+  .btn-approve {
+    background: var(--quaternary);
+    color: var(--fg);
+    font-size: 18px;
+    padding: 18px 40px;
+  }
+  .btn-reject {
+    background: var(--bg);
+    color: var(--danger);
+    border-color: var(--danger);
+    box-shadow: 4px 4px 0px var(--danger);
+  }
+  .btn-reject:hover {
+    background: #FEF2F2;
+    box-shadow: 6px 6px 0px var(--danger);
+  }
+  .btn-reject:active {
+    box-shadow: 2px 2px 0px var(--danger);
+  }
+  .action-helper {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted-fg);
+    font-style: italic;
+  }
+
+  /* ===================== */
+  /*   REJECTION NOTE       */
+  /* ===================== */
+  .rejection-area {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 2px dashed var(--border-color);
+    display: none;
+  }
+  .rejection-area.open {
+    display: block;
+  }
+  .rejection-area label {
+    display: block;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--fg);
+  }
+  .rejection-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 16px 20px;
+    border: var(--border);
+    border-radius: 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--fg);
+    background: var(--bg);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .rejection-textarea::placeholder {
+    color: var(--muted-fg);
+  }
+  .rejection-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 3px 3px 0px var(--accent);
+  }
+  .rejection-actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .btn-send-back {
+    background: var(--danger);
+    color: white;
+    font-size: 14px;
+    padding: 12px 24px;
+  }
+  .btn-cancel-reject {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: var(--muted-fg);
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+  .btn-cancel-reject:hover {
+    color: var(--fg);
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+  }
+  .btn-cancel-reject:active {
+    box-shadow: none;
+    transform: none;
+  }
+
+  /* ===================== */
+  /*     DECORATIVE         */
+  /* ===================== */
+  .deco-circle-bg {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ===================== */
+  /*       RESPONSIVE       */
+  /* ===================== */
+  @media (max-width: 900px) {
+    nav { padding: 0 24px; }
+    .nav-links { display: none; }
+    .breadcrumb { padding: 14px 24px; }
+    .page-content { padding: 24px 24px 120px; }
+    .task-overview,
+    .vote-section,
+    .winning-doc,
+    .all-versions,
+    .feedback-section,
+    .action-section {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+    .versions-grid {
+      grid-template-columns: 1fr;
+    }
+    .task-method {
+      font-size: 24px;
+    }
+    .task-method code {
+      font-size: 20px;
+    }
+    .task-overview-top {
+      flex-direction: column;
+    }
+  }
+
+  @media (max-width: 600px) {
+    nav { padding: 0 16px; }
+    .breadcrumb { padding: 12px 16px; font-size: 13px; }
+    .page-content { padding: 16px 16px 100px; }
+    .task-overview,
+    .vote-section,
+    .winning-doc,
+    .feedback-section,
+    .action-section {
+      padding: 20px 16px;
+      border-radius: 16px;
+      box-shadow: 2px 2px 0px var(--fg);
+    }
+    .all-versions {
+      border-radius: 16px;
+      box-shadow: 2px 2px 0px var(--fg);
+    }
+    .all-versions-header { padding: 16px; }
+    .all-versions-body { padding: 16px; }
+    .vote-row {
+      flex-wrap: wrap;
+    }
+    .vote-label { width: auto; }
+    .vote-count-label { width: auto; }
+    .action-buttons {
+      flex-direction: column;
+    }
+    .btn-approve, .btn-reject {
+      width: 100%;
+      justify-content: center;
+    }
+    .task-method {
+      font-size: 20px;
+    }
+    .task-method code {
+      font-size: 17px;
+      padding: 2px 8px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="logo">
+      <span class="logo-icon">D</span>
+      DocsTown
+    </a>
+    <ul class="nav-links">
+      <li><a href="tasks-index.html">Tasks</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="admin-review.html" class="active">Admin <span class="nav-admin-badge">&#x1f6e1; Admin</span></a></li>
+    </ul>
+  </div>
+  <div class="nav-right">
+    <div class="nav-user">
+      <div class="nav-avatar">MJ</div>
+      maintainer_jane
+    </div>
+    <a href="#" class="nav-signout">Sign out</a>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+  <a href="#">Admin</a>
+  <span class="sep">&rarr;</span>
+  <a href="#">Pending Review</a>
+  <span class="sep">&rarr;</span>
+  <span class="current">ActiveRecord::Base#connection_pool</span>
+</div>
+
+<!-- PAGE CONTENT -->
+<div class="page-content">
+
+  <!-- Decorative background shapes -->
+  <div class="shape shape-circle deco-circle-bg" style="width:200px;height:200px;background:rgba(139,92,246,0.06);top:60px;right:-60px;animation:float1 6s ease-in-out infinite;"></div>
+  <div class="shape shape-circle deco-circle-bg" style="width:120px;height:120px;background:rgba(244,114,182,0.06);top:400px;left:-40px;animation:float2 5s ease-in-out infinite;"></div>
+
+  <!-- TASK OVERVIEW -->
+  <div class="task-overview">
+    <div class="task-overview-top">
+      <div>
+        <div class="task-method"><code>ActiveRecord::Base#connection_pool</code></div>
+      </div>
+      <div class="status-badge status-pending-review">&#x23F3; Pending Review</div>
+    </div>
+    <div class="task-meta">
+      <div class="task-meta-row">
+        <span class="task-meta-icon">&#128193;</span>
+        <span>Source: <code>activerecord/lib/active_record/connection_adapters/pool.rb</code></span>
+      </div>
+      <div class="task-meta-row">
+        <span class="task-meta-icon">&#x2705;</span>
+        <span>Reached consensus on <strong>Feb 10, 2026</strong> &mdash; <strong>22 total votes</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOTE BREAKDOWN -->
+  <div class="vote-section">
+    <div class="section-label">
+      <span class="section-label-dot"></span>
+      Vote Breakdown
+    </div>
+    <div class="vote-bars">
+      <div class="vote-row">
+        <div class="vote-label">
+          <span class="vote-label-pill version-a">A</span>
+          Version A
+          <span class="winner-badge">&#x2B50; Winner</span>
+        </div>
+        <div class="vote-bar-track">
+          <div class="vote-bar-fill version-a" style="width: 64%;"></div>
+        </div>
+        <div class="vote-count-label">14 votes (64%)</div>
+      </div>
+      <div class="vote-row">
+        <div class="vote-label">
+          <span class="vote-label-pill version-b">B</span>
+          Version B
+        </div>
+        <div class="vote-bar-track">
+          <div class="vote-bar-fill version-b" style="width: 23%;"></div>
+        </div>
+        <div class="vote-count-label">5 votes (23%)</div>
+      </div>
+      <div class="vote-row">
+        <div class="vote-label">
+          <span class="vote-label-pill version-c">C</span>
+          Version C
+        </div>
+        <div class="vote-bar-track">
+          <div class="vote-bar-fill version-c" style="width: 14%;"></div>
+        </div>
+        <div class="vote-count-label">3 votes (14%)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WINNING DOCUMENTATION PREVIEW -->
+  <div class="winning-doc">
+    <div class="winning-doc-badge">&#x1F3C6; Winner &mdash; Version A</div>
+    <div class="rdoc-content">
+      <div class="method-sig">connection_pool &rarr; ConnectionPool</div>
+
+      <h3>Description</h3>
+      <p>
+        Returns the connection pool associated with this class. The connection pool manages
+        a set of reusable database connections, providing thread-safe checkout and checkin
+        operations. Each connection is allocated to a requesting thread and returned to the
+        pool when no longer needed, ensuring efficient resource usage under concurrent load.
+      </p>
+      <p>
+        The pool is lazily initialized on first access and its size is determined by the
+        <code>pool</code> option in your <code>database.yml</code> configuration. When all
+        connections are checked out and a new request arrives, the pool will block for up to
+        <code>checkout_timeout</code> seconds before raising a
+        <code>ConnectionTimeoutError</code>.
+      </p>
+
+      <h3>Parameters</h3>
+      <ul class="param-list">
+        <li><code>None</code> &mdash; This is a reader method with no parameters.</li>
+      </ul>
+
+      <h3>Returns</h3>
+      <div class="return-value">
+        <code>ActiveRecord::ConnectionAdapters::ConnectionPool</code> &mdash; The connection pool instance for this class's database configuration.
+      </div>
+
+      <h3>Examples</h3>
+      <div class="rdoc-code-block"><span class="comment"># Access the connection pool</span>
+<span class="method">pool</span> = ActiveRecord::Base.<span class="method">connection_pool</span>
+
+<span class="comment"># Check pool statistics</span>
+pool.<span class="method">size</span>         <span class="comment"># =&gt; 5 (default)</span>
+pool.<span class="method">connections</span>  <span class="comment"># =&gt; [#&lt;ConnectionAdapter&gt;, ...]</span>
+pool.<span class="method">active_connection?</span> <span class="comment"># =&gt; true</span>
+
+<span class="comment"># Use with_connection for automatic checkout/checkin</span>
+ActiveRecord::Base.<span class="method">connection_pool</span>.<span class="method">with_connection</span> <span class="keyword">do</span> |conn|
+  conn.<span class="method">execute</span>(<span class="string">"SELECT 1"</span>)
+<span class="keyword">end</span>
+
+<span class="comment"># Retrieve pool stats</span>
+<span class="method">stats</span> = pool.<span class="method">stat</span>
+<span class="comment"># =&gt; { size: 5, connections: 2, busy: 1, dead: 0, idle: 1, waiting: 0, checkout_timeout: 5 }</span></div>
+
+      <div class="see-also">
+        <strong>See also:</strong>
+        <a href="#">ActiveRecord::ConnectionAdapters::ConnectionPool</a>,
+        <a href="#">establish_connection</a>,
+        <a href="#">connection</a>,
+        <a href="#">ConnectionPool#with_connection</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALL VERSIONS (COLLAPSIBLE) -->
+  <div class="all-versions">
+    <div class="all-versions-header" id="versions-toggle" onclick="toggleVersions()">
+      <div class="all-versions-title">All Versions (3)</div>
+      <span class="toggle-icon">&#x25BC;</span>
+    </div>
+    <div class="all-versions-body" id="versions-body">
+      <div class="versions-grid">
+        <!-- Version A -->
+        <div class="version-card">
+          <div class="version-card-header version-a-header">
+            Version A
+            <span class="version-card-votes">14 votes</span>
+          </div>
+          <div class="version-card-body">
+            <p>Returns the connection pool associated with this class. The connection pool manages a set of reusable database connections, providing thread-safe checkout and checkin operations...</p>
+            <p>The pool is lazily initialized on first access and its size is determined by the <code>pool</code> option in your <code>database.yml</code>.</p>
+          </div>
+        </div>
+        <!-- Version B -->
+        <div class="version-card">
+          <div class="version-card-header version-b-header">
+            Version B
+            <span class="version-card-votes">5 votes</span>
+          </div>
+          <div class="version-card-body">
+            <p>The connection pool acts as a thread-safe intermediary between your application and the database layer. Think of it as a checkout counter: threads borrow a connection, use it, and return it when done.</p>
+            <p>Access via <code>ActiveRecord::Base.connection_pool</code>. Configure pool size in <code>database.yml</code>.</p>
+          </div>
+        </div>
+        <!-- Version C -->
+        <div class="version-card">
+          <div class="version-card-header version-c-header">
+            Version C
+            <span class="version-card-votes">3 votes</span>
+          </div>
+          <div class="version-card-body">
+            <p><code>#connection_pool</code> &mdash; Returns the <code>ConnectionPool</code> instance. Manages reusable database connections. Key methods: <code>checkout</code>, <code>checkin</code>, <code>with_connection</code>.</p>
+            <p>Configure via pool size setting in database.yml. Raises <code>ConnectionTimeoutError</code> if pool exhausted.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMUNITY FEEDBACK -->
+  <div class="feedback-section">
+    <div class="section-label">
+      <span class="section-label-dot" style="background: var(--secondary);"></span>
+      Voter Feedback on Winning Version
+    </div>
+    <div class="feedback-list">
+      <div class="feedback-item">
+        <div class="feedback-avatar a1">RK</div>
+        <div class="feedback-body">
+          <div class="feedback-meta">
+            <span class="feedback-username">rails_kid_42</span>
+            <span class="feedback-date">Feb 10, 2026</span>
+          </div>
+          <div class="feedback-text">Clear and comprehensive. Covers edge cases like checkout timeout really well. The stat example at the end is a nice touch.</div>
+        </div>
+      </div>
+      <div class="feedback-item">
+        <div class="feedback-avatar a2">SL</div>
+        <div class="feedback-body">
+          <div class="feedback-meta">
+            <span class="feedback-username">sarah_learns</span>
+            <span class="feedback-date">Feb 9, 2026</span>
+          </div>
+          <div class="feedback-text">The with_connection example is exactly what I was looking for when I first tried to understand pool management. Would have saved me an hour of reading source code.</div>
+        </div>
+      </div>
+      <div class="feedback-item">
+        <div class="feedback-avatar a3">DO</div>
+        <div class="feedback-body">
+          <div class="feedback-meta">
+            <span class="feedback-username">db_ops_pro</span>
+            <span class="feedback-date">Feb 9, 2026</span>
+          </div>
+          <div class="feedback-text">Good structure. Parameters, returns, and examples are all present. The mention of lazy initialization is important context that the other versions missed.</div>
+        </div>
+      </div>
+      <div class="feedback-item">
+        <div class="feedback-avatar a4">NR</div>
+        <div class="feedback-body">
+          <div class="feedback-meta">
+            <span class="feedback-username">newbie_rubyist</span>
+            <span class="feedback-date">Feb 8, 2026</span>
+          </div>
+          <div class="feedback-text">As someone new to Rails, this version was the easiest to follow. Version B was too metaphorical and Version C was too terse.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTION SECTION -->
+  <div class="action-section">
+    <div class="action-label">Admin Decision</div>
+    <div class="action-buttons">
+      <button class="btn btn-approve" onclick="handleApprove()">&#x2705; Approve &amp; Submit PR</button>
+      <button class="btn btn-reject" onclick="toggleRejection()">&#x2717; Reject with Note</button>
+    </div>
+    <div class="action-helper">Approving will automatically submit a PR to <strong>rails/rails</strong></div>
+
+    <!-- Rejection Note Area -->
+    <div class="rejection-area" id="rejection-area">
+      <label for="rejection-note">Rejection Note</label>
+      <textarea class="rejection-textarea" id="rejection-note" placeholder="Explain why this needs revision..."></textarea>
+      <div class="rejection-actions">
+        <button class="btn btn-send-back" onclick="handleReject()">Send Back to Voting</button>
+        <button class="btn btn-cancel-reject" onclick="toggleRejection()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggleVersions() {
+    const header = document.getElementById('versions-toggle');
+    const body = document.getElementById('versions-body');
+    header.classList.toggle('open');
+    body.classList.toggle('open');
+  }
+
+  function toggleRejection() {
+    const area = document.getElementById('rejection-area');
+    area.classList.toggle('open');
+  }
+
+  function handleApprove() {
+    const btn = event.target;
+    btn.textContent = 'Submitting PR...';
+    btn.style.opacity = '0.7';
+    btn.style.pointerEvents = 'none';
+    setTimeout(() => {
+      btn.textContent = 'PR Submitted!';
+      btn.style.background = '#059669';
+      btn.style.opacity = '1';
+    }, 1500);
+  }
+
+  function handleReject() {
+    const note = document.getElementById('rejection-note').value;
+    if (!note.trim()) {
+      document.getElementById('rejection-note').style.borderColor = '#EF4444';
+      document.getElementById('rejection-note').style.boxShadow = '3px 3px 0px #EF4444';
+      document.getElementById('rejection-note').setAttribute('placeholder', 'Please provide a reason for rejection...');
+      return;
+    }
+    const btn = event.target;
+    btn.textContent = 'Sending back...';
+    btn.style.opacity = '0.7';
+    setTimeout(() => {
+      btn.textContent = 'Sent back to voting!';
+      btn.style.background = 'var(--tertiary)';
+      btn.style.color = 'var(--fg)';
+      btn.style.opacity = '1';
+    }, 1000);
+  }
+</script>
+
+</body>
+</html>

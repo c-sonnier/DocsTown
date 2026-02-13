@@ -11,50 +11,80 @@ Implement GitHub OAuth sign-in so users can authenticate and begin voting immedi
 
 ### 1. OmniAuth Configuration
 - Install and configure `omniauth-github` gem
+- Install `omniauth-rails_csrf_protection` gem (required for OmniAuth 2.x+ CSRF protection)
 - Set up OAuth credentials in Rails credentials
 - Configure OmniAuth initializer with GitHub strategy
 - Set callback URL: `/auth/github/callback`
-- Handle CSRF protection with OmniAuth (Rails 8 considerations)
 
-### 2. Sessions Controller
+### 2. Current Attributes
+Set up `Current` for request-scoped state (Rails convention):
+
+```ruby
+# app/models/current.rb
+class Current < ActiveSupport::CurrentAttributes
+  attribute :user
+end
+```
+
+Set `Current.user` in a `before_action` on `ApplicationController`. This makes the current user available everywhere — models, jobs, mailers — not just controllers and views.
+
+### 3. Sessions Controller
 Create `SessionsController`:
 - `create` — OmniAuth callback action
   - Find or create User from GitHub auth hash
   - Extract: `uid`, `info.nickname`, `info.image`, `info.email`
   - Set `session[:user_id]`
+  - Set `Current.user`
   - Redirect to tasks index (or previous page)
 - `destroy` — Sign out
   - Clear session
   - Redirect to root
+- `failure` — OmniAuth failure handler
+  - Flash error message
+  - Redirect to root
 
-### 3. Routes
+### 4. Routes
 ```ruby
 get "/auth/github/callback", to: "sessions#create"
 get "/auth/failure", to: "sessions#failure"
 delete "/logout", to: "sessions#destroy"
 ```
 
-### 4. Current User Helper
-- `ApplicationController#current_user` — load user from session
-- `ApplicationController#logged_in?` — boolean helper
-- `ApplicationController#require_login` — before_action for protected routes
-- Make `current_user` and `logged_in?` available as view helpers
+### 5. Authentication Helpers on ApplicationController
+```ruby
+class ApplicationController < ActionController::Base
+  before_action :set_current_user
 
-### 5. Navigation Integration
+  private
+
+  def set_current_user
+    Current.user = User.find_by(id: session[:user_id]) if session[:user_id]
+  end
+
+  def require_login
+    redirect_to root_path, alert: "Please sign in" unless Current.user
+  end
+
+  def require_maintainer
+    require_login
+    redirect_to root_path, alert: "Not authorized" unless Current.user&.maintainer?
+  end
+end
+```
+
+### 6. Navigation Integration
 - Show "Sign in with GitHub" button when logged out
 - Show avatar, username, and "Sign out" link when logged in
-
-### 6. Authorization Helpers
-- `require_maintainer` before_action for admin routes
-- Check `current_user.maintainer?` role
+- **Design reference:** See `STYLE_GUIDE.md` for button styles (primary "candy" button for sign-in CTA, nav styling) and `mockups/` for the nav bar pattern used across all authenticated pages
 
 ### 7. Tests
-- Test OmniAuth callback with mock auth hash
+- Test OmniAuth callback with mock auth hash (OmniAuth test mode)
 - Test user creation on first login
 - Test user lookup on subsequent login
 - Test session persistence and destruction
 - Test require_login redirect behavior
 - Test require_maintainer access control
+- Test failure action renders gracefully
 
 ## Output
 Working GitHub OAuth flow: sign in → session created → sign out. Protected routes redirect to sign-in.

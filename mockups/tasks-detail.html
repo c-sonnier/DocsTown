@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocsTown — ActiveRecord::Base#connection_pool</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFDF5;
+    --fg: #1E293B;
+    --muted: #F1F5F9;
+    --muted-fg: #64748B;
+    --accent: #8B5CF6;
+    --accent-fg: #FFFFFF;
+    --secondary: #F472B6;
+    --tertiary: #FBBF24;
+    --quaternary: #34D399;
+    --border-color: #E2E8F0;
+    --card: #FFFFFF;
+    --border: 2px solid var(--fg);
+    --shadow: 4px 4px 0px var(--fg);
+    --shadow-hover: 6px 6px 0px var(--fg);
+    --shadow-active: 2px 2px 0px var(--fg);
+    --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Outfit', system-ui, sans-serif;
+    line-height: 1.15;
+  }
+
+  .dot-bg {
+    background-image: radial-gradient(circle, #CBD5E1 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  @keyframes float1 {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(5deg); }
+  }
+  @keyframes float2 {
+    0%, 100% { transform: translateY(0) rotate(45deg); }
+    50% { transform: translateY(-10px) rotate(50deg); }
+  }
+  @keyframes pop-in {
+    0% { opacity: 0; transform: scale(0.6) translateY(20px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes checkmark-pop {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+
+  /* ===================== */
+  /*          NAV           */
+  /* ===================== */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 48px;
+    border-bottom: var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--fg);
+  }
+  .logo-img {
+    height: 65px;
+    width: auto;
+  }
+  nav .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 32px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  nav a {
+    text-decoration: none;
+    color: var(--fg);
+    padding: 4px 0;
+    position: relative;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: var(--accent); }
+  nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0;
+    width: 0; height: 3px;
+    background: var(--accent);
+    border-radius: 9999px;
+    transition: width 0.3s var(--bounce);
+  }
+  nav a:hover::after { width: 100%; }
+  nav .nav-links a.active {
+    color: var(--accent);
+  }
+  nav .nav-links a.active::after {
+    width: 100%;
+  }
+  .nav-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .nav-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: var(--border);
+    background: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    overflow: hidden;
+  }
+  .nav-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .nav-signout {
+    font-size: 13px;
+    color: var(--muted-fg);
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .nav-signout:hover { color: var(--accent); }
+
+  /* ===================== */
+  /*      PAGE LAYOUT      */
+  /* ===================== */
+  .page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 48px;
+    position: relative;
+  }
+
+  /* ===================== */
+  /*      BREADCRUMB       */
+  /* ===================== */
+  .breadcrumb {
+    padding: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted-fg);
+  }
+  .breadcrumb a {
+    text-decoration: none;
+    color: var(--muted-fg);
+    transition: color 0.2s;
+  }
+  .breadcrumb a:hover { color: var(--accent); }
+  .breadcrumb .bc-sep { opacity: 0.4; }
+  .breadcrumb .bc-current { color: var(--fg); }
+  .breadcrumb .bc-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: var(--border);
+    background: var(--card);
+    box-shadow: 2px 2px 0px var(--fg);
+    transition: all 0.3s var(--bounce);
+    font-size: 16px;
+    margin-right: 4px;
+  }
+  .breadcrumb .bc-back:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0px var(--fg);
+    background: var(--tertiary);
+  }
+
+  /* ===================== */
+  /*    TASK HEADER         */
+  /* ===================== */
+  .task-header {
+    position: relative;
+    padding: 32px 0 40px;
+    overflow: visible;
+  }
+  .task-header-deco-circle {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: var(--tertiary);
+    opacity: 0.12;
+    top: -80px;
+    right: -60px;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .task-header-content {
+    position: relative;
+    z-index: 1;
+  }
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--fg);
+    background: #D1FAE5;
+    border: 2px solid var(--quaternary);
+    border-radius: 9999px;
+    padding: 6px 16px;
+    margin-bottom: 16px;
+    box-shadow: 2px 2px 0px var(--quaternary);
+  }
+  .status-badge .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--quaternary);
+    animation: float1 2s ease-in-out infinite;
+  }
+  .task-method {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(28px, 3.5vw, 42px);
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: var(--fg);
+  }
+  .task-method .method-hash {
+    color: var(--accent);
+  }
+  .task-source-path {
+    font-size: 14px;
+    color: var(--muted-fg);
+    font-family: 'Plus Jakarta Sans', monospace;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .task-source-path .path-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: var(--muted);
+    font-size: 12px;
+  }
+
+  /* Vote progress */
+  .vote-progress {
+    max-width: 480px;
+  }
+  .vote-progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .vote-progress-label .vp-count {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .vote-progress-label .vp-pct {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--quaternary);
+  }
+  .vote-progress-bar {
+    height: 12px;
+    background: var(--muted);
+    border-radius: 9999px;
+    border: 2px solid var(--fg);
+    overflow: hidden;
+  }
+  .vote-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--secondary));
+    border-radius: 9999px;
+    width: 70%;
+    transition: width 1.2s var(--bounce);
+  }
+
+  /* Floating deco */
+  .deco-shape {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .deco-square-rotated {
+    width: 36px;
+    height: 36px;
+    border: var(--border);
+    border-radius: 8px;
+    background: rgba(139, 92, 246, 0.1);
+    transform: rotate(45deg);
+    animation: float2 5s ease-in-out infinite;
+  }
+
+  /* ===================== */
+  /*   SOURCE CODE CARD     */
+  /* ===================== */
+  .source-card {
+    background: var(--card);
+    border: var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 48px;
+    overflow: hidden;
+  }
+  .source-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: var(--border);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+  }
+  .source-card-header:hover {
+    background: var(--muted);
+  }
+  .source-card-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .source-card-toggle {
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s;
+  }
+  .source-card-toggle .toggle-arrow {
+    display: inline-block;
+    transition: transform 0.3s var(--bounce);
+  }
+  .source-card.collapsed .toggle-arrow {
+    transform: rotate(0deg);
+  }
+  .source-card:not(.collapsed) .toggle-arrow {
+    transform: rotate(180deg);
+  }
+  .source-card-body {
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+  }
+  .source-card.collapsed .source-card-body {
+    max-height: 0;
+    opacity: 0;
+  }
+  .source-card:not(.collapsed) .source-card-body {
+    max-height: 600px;
+    opacity: 1;
+  }
+  .code-block {
+    background: var(--fg);
+    color: #E2E8F0;
+    padding: 0;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-x: auto;
+  }
+  .code-class-header {
+    padding: 12px 24px;
+    color: var(--muted-fg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 13px;
+  }
+  .code-class-header .kw { color: var(--secondary); }
+  .code-class-header .cn { color: var(--tertiary); }
+  .code-lines {
+    padding: 16px 0;
+  }
+  .code-line {
+    display: flex;
+    padding: 0 24px;
+    transition: background 0.15s;
+  }
+  .code-line:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .code-line.highlight {
+    background: rgba(139, 92, 246, 0.15);
+    border-left: 3px solid var(--accent);
+    padding-left: 21px;
+  }
+  .code-line-number {
+    color: rgba(255, 255, 255, 0.2);
+    min-width: 48px;
+    text-align: right;
+    padding-right: 20px;
+    user-select: none;
+    font-size: 13px;
+  }
+  .code-line-content {
+    white-space: pre;
+  }
+  .code-line-content .kw { color: var(--secondary); }
+  .code-line-content .fn { color: #93C5FD; }
+  .code-line-content .str { color: var(--quaternary); }
+  .code-line-content .sym { color: var(--tertiary); }
+  .code-line-content .cm { color: var(--muted-fg); font-style: italic; }
+  .code-line-content .cn { color: var(--tertiary); }
+  .code-line-content .op { color: #F472B6; }
+  .code-line-content .iv { color: #93C5FD; }
+
+  /* ===================== */
+  /*   SQUIGGLY DIVIDER     */
+  /* ===================== */
+  .squiggly-divider {
+    text-align: center;
+    padding: 24px 0 32px;
+    position: relative;
+  }
+  .squiggly-divider svg {
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* ===================== */
+  /*    VERSION CARDS       */
+  /* ===================== */
+  .versions-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 56px;
+  }
+  .version-card {
+    background: var(--card);
+    border: var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto 1fr;
+    transition: all 0.3s var(--bounce);
+    overflow: hidden;
+    position: relative;
+  }
+  .version-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-hover);
+  }
+  .version-card.selected {
+    border-color: var(--accent);
+    box-shadow: 4px 4px 0px var(--accent);
+  }
+  .version-card.selected:hover {
+    box-shadow: 6px 6px 0px var(--accent);
+  }
+  .version-card-check {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--fg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: 2px 2px 0px var(--fg);
+    animation: checkmark-pop 0.4s var(--bounce);
+    z-index: 2;
+  }
+  .version-card-top {
+    padding: 20px 24px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    grid-column: 1 / -1;
+  }
+  .version-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 5px 14px;
+    border-radius: 9999px;
+    border: var(--border);
+  }
+  .version-label-a { background: var(--accent); color: white; }
+  .version-label-b { background: var(--secondary); color: white; }
+  .version-label-c { background: var(--tertiary); color: var(--fg); }
+  .version-votes {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted-fg);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .version-votes .vv-arrow { color: var(--quaternary); }
+  .version-card-body {
+    padding: 0 24px 24px;
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .version-card-body h4 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--fg);
+  }
+  .version-card-body p {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--muted-fg);
+    margin-bottom: 12px;
+  }
+  .version-card-body code {
+    background: #F3EEFF;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--accent);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .version-card-body .doc-section {
+    margin-bottom: 14px;
+  }
+  .version-card-body .doc-section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--fg);
+    margin-bottom: 6px;
+  }
+  .version-card-body .doc-param {
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: var(--muted-fg);
+  }
+  .version-card-body .doc-param code {
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .version-card-body .inline-code-block {
+    background: var(--fg);
+    color: #E2E8F0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 8px 0;
+    overflow-x: auto;
+  }
+  .version-card-body .inline-code-block .kw { color: var(--secondary); }
+  .version-card-body .inline-code-block .cm { color: var(--muted-fg); }
+  .version-card-body .inline-code-block .cn { color: var(--tertiary); }
+  .version-card-body .inline-code-block .fn { color: #93C5FD; }
+  .version-card-body .inline-code-block .str { color: var(--quaternary); }
+
+  .version-card-footer {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    padding: 0 28px 24px 0;
+  }
+  .vote-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 14px 28px;
+    border: var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.3s var(--bounce);
+    box-shadow: var(--shadow);
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 48px;
+  }
+  .vote-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-hover);
+  }
+  .vote-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-active);
+  }
+  .vote-btn-a {
+    background: var(--accent);
+    color: white;
+  }
+  .vote-btn-b {
+    background: var(--secondary);
+    color: white;
+  }
+  .vote-btn-c {
+    background: var(--tertiary);
+    color: var(--fg);
+  }
+  .vote-btn.voted {
+    opacity: 0.7;
+    cursor: default;
+  }
+  .vote-btn .vote-btn-icon {
+    font-size: 16px;
+  }
+  .remove-vote {
+    display: none;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #EF4444;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 0 0;
+    transition: color 0.2s;
+    text-align: center;
+    width: 100%;
+  }
+  .remove-vote:hover {
+    color: #DC2626;
+    text-decoration: underline;
+  }
+  .version-card.selected .remove-vote {
+    display: block;
+  }
+
+  /* ===================== */
+  /*   FEEDBACK SECTION     */
+  /* ===================== */
+  .feedback-section {
+    margin-bottom: 80px;
+  }
+  .feedback-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .feedback-input-area {
+    background: var(--card);
+    border: var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 24px;
+    transition: all 0.3s var(--bounce);
+  }
+  .feedback-input-area:focus-within {
+    border-color: var(--accent);
+    box-shadow: 4px 4px 0px var(--accent);
+  }
+  .feedback-textarea {
+    width: 100%;
+    min-height: 100px;
+    border: none;
+    outline: none;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--fg);
+    background: transparent;
+    resize: vertical;
+  }
+  .feedback-textarea::placeholder {
+    color: var(--muted-fg);
+  }
+  .feedback-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+  .feedback-submit {
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 12px 28px;
+    border: var(--border);
+    border-radius: 9999px;
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: all 0.3s var(--bounce);
+  }
+  .feedback-submit:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-hover);
+  }
+  .feedback-submit:active {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-active);
+  }
+
+  /* Comments */
+  .feedback-comments {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .feedback-comment {
+    background: var(--card);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 18px 22px;
+    box-shadow: 2px 2px 0px var(--border-color);
+    transition: all 0.3s var(--bounce);
+  }
+  .feedback-comment:hover {
+    border-color: var(--fg);
+    box-shadow: 3px 3px 0px var(--fg);
+    transform: translate(-1px, -1px);
+  }
+  .feedback-comment-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .feedback-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--fg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: white;
+    flex-shrink: 0;
+  }
+  .feedback-avatar.av-1 { background: var(--accent); }
+  .feedback-avatar.av-2 { background: var(--secondary); }
+  .feedback-avatar.av-3 { background: var(--quaternary); }
+  .feedback-username {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fg);
+  }
+  .feedback-time {
+    font-size: 12px;
+    color: var(--muted-fg);
+    margin-left: auto;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+  }
+  .feedback-comment-body {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--muted-fg);
+    padding-left: 42px;
+  }
+
+  /* ===================== */
+  /*        FOOTER          */
+  /* ===================== */
+  footer {
+    padding: 32px 48px;
+    background: var(--fg);
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    border-top: var(--border);
+  }
+  footer .logo { color: var(--bg); font-size: 20px; }
+  footer a {
+    color: var(--tertiary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  footer a:hover { color: var(--accent); }
+
+  /* ===================== */
+  /*      RESPONSIVE        */
+  /* ===================== */
+  @media (max-width: 900px) {
+    nav { padding: 14px 24px; }
+    nav .nav-links { display: none; }
+    .page-container { padding: 0 24px; }
+    .version-card {
+      grid-template-columns: 1fr;
+      box-shadow: 2px 2px 0px var(--fg);
+    }
+    .version-card.selected {
+      box-shadow: 2px 2px 0px var(--accent);
+    }
+    .version-card-footer {
+      grid-column: 1;
+      grid-row: 3;
+      padding: 0 24px 24px;
+    }
+    .vote-btn {
+      width: 100%;
+    }
+    .source-card {
+      box-shadow: 2px 2px 0px var(--fg);
+    }
+    .feedback-input-area {
+      box-shadow: 2px 2px 0px var(--fg);
+    }
+    .feedback-input-area:focus-within {
+      box-shadow: 2px 2px 0px var(--accent);
+    }
+    .vote-btn {
+      box-shadow: 2px 2px 0px var(--fg);
+    }
+    .feedback-submit {
+      box-shadow: 2px 2px 0px var(--fg);
+    }
+    .task-header-deco-circle {
+      width: 180px;
+      height: 180px;
+      top: -40px;
+      right: -40px;
+    }
+    .task-header { padding: 24px 0 32px; }
+    .task-method { font-size: 24px; }
+    footer { padding: 24px; flex-direction: column; gap: 12px; text-align: center; }
+  }
+  @media (max-width: 600px) {
+    .page-container { padding: 0 16px; }
+    .vote-btn {
+      min-height: 52px;
+    }
+    .feedback-comment-body {
+      padding-left: 0;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">
+    <img src="docstown_logo.png" alt="DocsTown" class="logo-img">
+  </a>
+  <ul class="nav-links">
+    <li><a href="tasks-index.html" class="active">Tasks</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="settings.html">Settings</a></li>
+  </ul>
+  <div class="nav-user">
+    <div class="nav-avatar">
+      <img src="https://github.com/octocat.png" alt="octocat">
+    </div>
+    <span>octocat</span>
+    <span class="nav-signout">Sign out</span>
+  </div>
+</nav>
+
+<div class="page-container">
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb">
+    <a href="tasks-index.html" class="bc-back">←</a>
+    <a href="tasks-index.html">Tasks</a>
+    <span class="bc-sep">→</span>
+    <span class="bc-current">ActiveRecord::Base#connection_pool</span>
+  </div>
+
+  <!-- TASK HEADER -->
+  <section class="task-header">
+    <div class="task-header-deco-circle"></div>
+    <!-- Floating violet square -->
+    <div class="deco-shape deco-square-rotated" style="top: 20px; right: 40px;"></div>
+
+    <div class="task-header-content">
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        Voting
+      </div>
+      <h1 class="task-method">ActiveRecord::Base<span class="method-hash">#</span>connection_pool</h1>
+      <div class="task-source-path">
+        <span class="path-icon">📁</span>
+        activerecord/lib/active_record/connection_adapters/pool.rb
+      </div>
+      <div class="vote-progress">
+        <div class="vote-progress-label">
+          <span><span class="vp-count">14 / 20</span> votes</span>
+          <span class="vp-pct">70% to consensus</span>
+        </div>
+        <div class="vote-progress-bar">
+          <div class="vote-progress-fill"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOURCE CODE -->
+  <div class="source-card" id="sourceCard">
+    <div class="source-card-header" onclick="toggleSource()">
+      <span class="source-card-title">📄 Source Code</span>
+      <span class="source-card-toggle">
+        Show context
+        <span class="toggle-arrow">▼</span>
+      </span>
+    </div>
+    <div class="source-card-body">
+      <div class="code-block">
+        <div class="code-class-header">
+          <span class="kw">class</span> <span class="cn">ActiveRecord::Base</span>
+        </div>
+        <div class="code-lines">
+          <div class="code-line">
+            <span class="code-line-number">142</span>
+            <span class="code-line-content">  <span class="cm"># Returns the connection pool associated with this class.</span></span>
+          </div>
+          <div class="code-line">
+            <span class="code-line-number">143</span>
+            <span class="code-line-content">  <span class="cm"># Raises +ConnectionNotEstablished+ if no pool is found.</span></span>
+          </div>
+          <div class="code-line highlight">
+            <span class="code-line-number">144</span>
+            <span class="code-line-content">  <span class="kw">def</span> <span class="fn">connection_pool</span></span>
+          </div>
+          <div class="code-line highlight">
+            <span class="code-line-number">145</span>
+            <span class="code-line-content">    pool_manager.<span class="fn">pool_config</span>(pool_key)&amp;.pool || <span class="kw">raise</span>(<span class="cn">ConnectionNotEstablished</span>)</span>
+          </div>
+          <div class="code-line highlight">
+            <span class="code-line-number">146</span>
+            <span class="code-line-content">  <span class="kw">end</span></span>
+          </div>
+          <div class="code-line">
+            <span class="code-line-number">147</span>
+            <span class="code-line-content"></span>
+          </div>
+          <div class="code-line">
+            <span class="code-line-number">148</span>
+            <span class="code-line-content">  <span class="cm"># Returns the pool manager for the current handler.</span></span>
+          </div>
+          <div class="code-line">
+            <span class="code-line-number">149</span>
+            <span class="code-line-content">  <span class="kw">def</span> <span class="fn">pool_manager</span></span>
+          </div>
+          <div class="code-line">
+            <span class="code-line-number">150</span>
+            <span class="code-line-content">    <span class="iv">@pool_manager</span> ||= <span class="cn">PoolManager</span>.new</span>
+          </div>
+          <div class="code-line">
+            <span class="code-line-number">151</span>
+            <span class="code-line-content">  <span class="kw">end</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SQUIGGLY DIVIDER -->
+  <div class="squiggly-divider">
+    <svg width="200" height="20" viewBox="0 0 200 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 10 Q 12.5 0, 25 10 T 50 10 T 75 10 T 100 10 T 125 10 T 150 10 T 175 10 T 200 10" stroke="#CBD5E1" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- VERSION CARDS -->
+  <div class="versions-grid">
+
+    <!-- VERSION A -->
+    <div class="version-card">
+      <div class="version-card-top">
+        <span class="version-label version-label-a">Version A</span>
+        <span class="version-votes"><span class="vv-arrow">▲</span> 8 votes</span>
+      </div>
+      <div class="version-card-body">
+        <h4>connection_pool</h4>
+        <p>Returns the <code>ConnectionPool</code> instance associated with the current class and connection specification. The pool manages a finite set of reusable database connections, providing thread-safe checkout and checkin semantics.</p>
+
+        <div class="doc-section">
+          <div class="doc-section-title">Parameters</div>
+          <div class="doc-param"><code>pool_key</code> (Symbol) &mdash; The key identifying which pool configuration to use. Defaults to the current handler's writing role.</div>
+        </div>
+
+        <div class="doc-section">
+          <div class="doc-section-title">Returns</div>
+          <p><code>ConnectionPool</code> &mdash; The active connection pool for this class.</p>
+        </div>
+
+        <div class="doc-section">
+          <div class="doc-section-title">Raises</div>
+          <p><code>ConnectionNotEstablished</code> &mdash; If no pool configuration exists for the given pool key, or if <code>establish_connection</code> has not been called.</p>
+        </div>
+      </div>
+      <div class="version-card-footer">
+        <div>
+          <button class="vote-btn vote-btn-a" onclick="castVote(this, 'A')">
+            Vote for Version A <span class="vote-btn-icon">→</span>
+          </button>
+          <button class="remove-vote" onclick="removeVote()">Remove vote</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VERSION B -->
+    <div class="version-card">
+      <div class="version-card-top">
+        <span class="version-label version-label-b">Version B</span>
+        <span class="version-votes"><span class="vv-arrow">▲</span> 4 votes</span>
+      </div>
+      <div class="version-card-body">
+        <h4>connection_pool</h4>
+        <p>Think of the connection pool as a checkout counter at a library. Your application has a limited number of database connections available, and each thread needs to "check out" one before it can talk to the database.</p>
+        <p>This method gives you access to that checkout counter. It looks up the right pool for your model's configuration and hands it back. If no pool has been set up yet (i.e., you haven't called <code>establish_connection</code>), it raises an error to let you know.</p>
+        <p>Most of the time you won't call this directly &mdash; ActiveRecord handles it behind the scenes. But if you're debugging connection issues or building custom connection logic, this is your entry point.</p>
+      </div>
+      <div class="version-card-footer">
+        <div>
+          <button class="vote-btn vote-btn-b" onclick="castVote(this, 'B')">
+            Vote for Version B <span class="vote-btn-icon">→</span>
+          </button>
+          <button class="remove-vote" onclick="removeVote()">Remove vote</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VERSION C -->
+    <div class="version-card">
+      <div class="version-card-top">
+        <span class="version-label version-label-c">Version C</span>
+        <span class="version-votes"><span class="vv-arrow">▲</span> 2 votes</span>
+      </div>
+      <div class="version-card-body">
+        <h4>connection_pool</h4>
+        <p>Returns the <code>ConnectionPool</code> for this model. Raises <code>ConnectionNotEstablished</code> if unavailable.</p>
+
+        <div class="doc-section">
+          <div class="doc-section-title">Usage</div>
+          <div class="inline-code-block"><span class="cm"># Get the pool</span>
+pool = <span class="cn">ActiveRecord</span>::<span class="cn">Base</span>.<span class="fn">connection_pool</span>
+
+<span class="cm"># Check pool status</span>
+pool.size          <span class="cm"># =&gt; 5</span>
+pool.connections   <span class="cm"># =&gt; [#&lt;Connection&gt;, ...]</span>
+pool.active_connection?  <span class="cm"># =&gt; true</span></div>
+        </div>
+
+        <div class="doc-section">
+          <div class="doc-section-title">See Also</div>
+          <p><code>establish_connection</code>, <code>connected?</code>, <code>remove_connection</code></p>
+        </div>
+      </div>
+      <div class="version-card-footer">
+        <div>
+          <button class="vote-btn vote-btn-c" onclick="castVote(this, 'C')">
+            Vote for Version C <span class="vote-btn-icon">→</span>
+          </button>
+          <button class="remove-vote" onclick="removeVote()">Remove vote</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FEEDBACK -->
+  <section class="feedback-section">
+    <h2 class="feedback-title">💬 Community Feedback</h2>
+
+    <div class="feedback-input-area">
+      <textarea class="feedback-textarea" placeholder="Share your thoughts on these drafts..."></textarea>
+      <div class="feedback-actions">
+        <button class="feedback-submit">Submit Feedback</button>
+      </div>
+    </div>
+
+    <div class="feedback-comments">
+      <div class="feedback-comment">
+        <div class="feedback-comment-header">
+          <div class="feedback-avatar av-1">SR</div>
+          <span class="feedback-username">schneems</span>
+          <span class="feedback-time">2 hours ago</span>
+        </div>
+        <div class="feedback-comment-body">
+          Version A is the most accurate. The pool_key parameter detail is important for anyone working with multiple databases. Version B is friendly but misses some technical nuance.
+        </div>
+      </div>
+
+      <div class="feedback-comment">
+        <div class="feedback-comment-header">
+          <div class="feedback-avatar av-2">KN</div>
+          <span class="feedback-username">kaspth</span>
+          <span class="feedback-time">5 hours ago</span>
+        </div>
+        <div class="feedback-comment-body">
+          I actually prefer Version B's approach for discoverability. New Rails developers will find the analogy much more helpful than a dry parameter list. Can we combine B's tone with A's completeness?
+        </div>
+      </div>
+
+      <div class="feedback-comment">
+        <div class="feedback-comment-header">
+          <div class="feedback-avatar av-3">MH</div>
+          <span class="feedback-username">matthewd</span>
+          <span class="feedback-time">1 day ago</span>
+        </div>
+        <div class="feedback-comment-body">
+          Version C's code examples are great but it needs more context. Not every reader will know what the return values mean. Leaning toward A for now.
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <div class="logo">
+      DocsTown
+    </div>
+    <span style="opacity: 0.4;">&copy; 2026</span>
+  </div>
+  <div>Crafted by: <a href="https://x.com/c_sonnier" target="_blank" rel="noopener">@c_sonnier</a></div>
+</footer>
+
+<script>
+  // Toggle source code card
+  function toggleSource() {
+    const card = document.getElementById('sourceCard');
+    card.classList.toggle('collapsed');
+    const toggle = card.querySelector('.source-card-toggle');
+    if (card.classList.contains('collapsed')) {
+      toggle.childNodes[0].textContent = 'Show context ';
+    } else {
+      toggle.childNodes[0].textContent = 'Hide context ';
+    }
+  }
+
+  // Simulate voting
+  function castVote(btn, version) {
+    // Remove previous selection
+    document.querySelectorAll('.version-card').forEach(card => {
+      card.classList.remove('selected');
+      const check = card.querySelector('.version-card-check');
+      if (check) check.remove();
+    });
+    document.querySelectorAll('.vote-btn').forEach(b => {
+      b.classList.remove('voted');
+      b.disabled = false;
+    });
+
+    // Set new selection
+    const card = btn.closest('.version-card');
+    card.classList.add('selected');
+
+    // Add checkmark
+    const checkEl = document.createElement('div');
+    checkEl.className = 'version-card-check';
+    checkEl.textContent = '✓';
+    card.appendChild(checkEl);
+
+    // Update button
+    btn.classList.add('voted');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="vote-btn-icon">✓</span> Voted for Version ' + version;
+
+    // Reset other buttons
+    document.querySelectorAll('.vote-btn').forEach(b => {
+      if (b !== btn && !b.classList.contains('voted')) {
+        const ver = b.closest('.version-card').querySelector('.version-label').textContent.replace('Version ', '');
+        b.innerHTML = 'Vote for Version ' + ver + ' <span class="vote-btn-icon">→</span>';
+      }
+    });
+  }
+
+  function removeVote() {
+    document.querySelectorAll('.version-card').forEach(card => {
+      card.classList.remove('selected');
+      const check = card.querySelector('.version-card-check');
+      if (check) check.remove();
+    });
+    document.querySelectorAll('.vote-btn').forEach(b => {
+      b.classList.remove('voted');
+      b.disabled = false;
+      const ver = b.closest('.version-card').querySelector('.version-label').textContent.replace('Version ', '');
+      b.innerHTML = 'Vote for Version ' + ver + ' <span class="vote-btn-icon">→</span>';
+      b.setAttribute('onclick', "castVote(this, '" + ver + "')");
+    });
+  }
+</script>
+
+</body>
+</html>
