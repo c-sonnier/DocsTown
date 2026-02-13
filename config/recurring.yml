@@ -16,3 +16,6 @@ production:
   weekly_discovery:
     command: "Project.find_each { |p| DiscoveryJob.perform_later(p.id) }"
     schedule: every Monday at 6am
+  draft_pickup:
+    class: DraftPickupJob
+    schedule: every 5 minutes
