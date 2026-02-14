@@ -1,0 +1,49 @@
+<div class="pg-bg min-h-screen" style="position: relative;">
+  <div class="header-deco-circle" style="position: fixed; top: -120px; right: -60px;"></div>
+  <div class="max-w-5xl mx-auto px-6 md:px-12">
+
+    <%# Page Header %>
+    <section class="page-header">
+      <div class="relative z-10">
+        <span class="admin-nav-badge" style="margin-bottom: 12px; display: inline-block;">Admin</span>
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: clamp(32px, 4vw, 52px); font-weight: 800; margin-bottom: 12px;">
+          Pending Review
+        </h1>
+        <p style="font-size: 16px; color: var(--pg-muted-fg); max-width: 540px;">
+          Tasks that reached community consensus and need maintainer review before PR submission.
+        </p>
+      </div>
+    </section>
+
+    <% if @tasks.empty? %>
+      <div class="text-center py-20" style="color: var(--pg-muted-fg); font-size: 16px;">
+        No tasks pending review.
+      </div>
+    <% else %>
+      <div class="flex flex-col gap-5 mb-14">
+        <% @tasks.each do |task| %>
+          <%= link_to admin_task_path(task), class: "admin-task-card" do %>
+            <div class="flex items-start justify-between gap-4 mb-3">
+              <div class="method-signature" style="flex: 1;"><%= task.method_signature %></div>
+              <span class="status-badge status-pending_review" style="flex-shrink: 0; border-color: var(--pg-quaternary); box-shadow: 2px 2px 0px var(--pg-quaternary);">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--pg-quaternary);"></span>
+                Pending Review
+              </span>
+            </div>
+            <div class="source-path mb-3"><%= task.source_file_path %></div>
+            <div class="flex items-center gap-4" style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; color: var(--pg-muted-fg);">
+              <span><strong style="color: var(--pg-fg);"><%= task.votes.size %></strong> votes</span>
+              <span>&middot;</span>
+              <span>Consensus reached <%= time_ago_in_words(task.updated_at) %> ago</span>
+              <% if task.winning_version %>
+                <span>&middot;</span>
+                <span style="color: var(--pg-quaternary);">Winner: Version <%= task.winning_version.label.upcase %></span>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
+  </div>
+</div>

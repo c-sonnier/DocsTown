@@ -14,5 +14,26 @@ Rails.application.routes.draw do
   get "/auth/failure", to: "sessions#failure"
   delete "/logout", to: "sessions#destroy"
 
-  root "pages#home"
+  resources :tasks, only: [ :index, :show ] do
+    resource :vote, only: [ :create, :destroy ]
+  end
+
+  namespace :admin do
+    resources :tasks, only: [ :index, :show ] do
+      member do
+        post :approve
+        post :reject
+      end
+    end
+  end
+
+  resource :profile, only: [ :show, :update ]
+  get "/unsubscribe/:token", to: "unsubscribes#show", as: :unsubscribe
+  post "/unsubscribe/:token", to: "unsubscribes#create"
+
+  authenticated = ->(request) { request.session[:user_id].present? }
+  constraints(authenticated) do
+    root to: "dashboards#show", as: :authenticated_root
+  end
+  root to: "pages#landing"
 end

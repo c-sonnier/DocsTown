@@ -1,0 +1,150 @@
+<div class="pg-bg min-h-screen">
+  <div class="max-w-5xl mx-auto px-6 md:px-12">
+
+    <%# Breadcrumb %>
+    <div class="flex items-center gap-2 py-5" style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; color: var(--pg-muted-fg);">
+      <%= link_to tasks_path, class: "bc-back" do %>&larr;<% end %>
+      <%= link_to "Tasks", tasks_path, style: "text-decoration: none; color: var(--pg-muted-fg); transition: color 0.2s;", class: "hover:text-purple-500" %>
+      <span style="opacity: 0.4;">&rarr;</span>
+      <span style="color: var(--pg-fg);"><%= @task.method_signature %></span>
+    </div>
+
+    <%# Task Header %>
+    <section class="relative pb-10 pt-8 overflow-visible">
+      <div style="position: absolute; width: 300px; height: 300px; border-radius: 50%; background: var(--pg-tertiary); opacity: 0.12; top: -80px; right: -60px; z-index: 0; pointer-events: none;"></div>
+
+      <div class="relative z-10">
+        <span class="status-badge status-<%= @task.status %>" style="margin-bottom: 16px; border-color: var(--pg-quaternary); box-shadow: 2px 2px 0px var(--pg-quaternary);">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--pg-quaternary);"></span>
+          <%= status_label(@task.status) %>
+        </span>
+
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: clamp(28px, 3.5vw, 42px); font-weight: 800; margin-bottom: 8px; margin-top: 16px; color: var(--pg-fg);">
+          <%= @task.method_signature %>
+        </h1>
+
+        <div class="flex items-center gap-2 mb-6" style="font-size: 14px; color: var(--pg-muted-fg);">
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; background: var(--pg-muted); font-size: 12px;">&#128193;</span>
+          <%= @task.source_file_path %>
+        </div>
+
+        <%# Vote Progress %>
+        <div style="max-width: 480px;">
+          <div class="flex justify-between items-baseline mb-2" style="font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600;">
+            <span>
+              <span style="font-size: 20px; font-weight: 800; color: var(--pg-accent);"><%= @task.votes.size %> / <%= DocumentationTask::CONSENSUS_VOTE_THRESHOLD %></span> votes
+            </span>
+            <span style="font-size: 13px; font-weight: 600; color: var(--pg-quaternary);">
+              <%= vote_progress_percentage(@task) %>% to consensus
+            </span>
+          </div>
+          <div class="vote-progress-bar">
+            <div class="vote-progress-fill" style="width: <%= vote_progress_percentage(@task) %>%;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <%# Source Code Card %>
+    <div class="source-card" data-controller="source-toggle">
+      <div class="source-card-header" data-action="click->source-toggle#toggle">
+        <span style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+          &#128196; Source Code
+        </span>
+        <span style="font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; color: var(--pg-accent); display: flex; align-items: center; gap: 6px;">
+          <span data-source-toggle-target="label">Hide context</span>
+          <span data-source-toggle-target="arrow" style="display: inline-block; transition: transform 0.3s var(--pg-bounce);">&#9660;</span>
+        </span>
+      </div>
+      <div data-source-toggle-target="body" style="overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease; max-height: 600px; opacity: 1;">
+        <div class="code-block"><%= @task.source_code %></div>
+      </div>
+    </div>
+
+    <%# Squiggly Divider %>
+    <div class="text-center py-6 pb-8">
+      <svg width="200" height="20" viewBox="0 0 200 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 10 Q 12.5 0, 25 10 T 50 10 T 75 10 T 100 10 T 125 10 T 150 10 T 175 10 T 200 10" stroke="#CBD5E1" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <%# Version Cards %>
+    <div class="flex flex-col gap-6 mb-14">
+      <% @task.draft_versions.order(:label).each do |version| %>
+        <% is_selected = @current_vote&.draft_version_id == version.id %>
+        <div class="version-card <%= 'selected' if is_selected %>">
+          <% if is_selected %>
+            <div class="version-card-check">&#10003;</div>
+          <% end %>
+
+          <div class="version-card-top">
+            <span class="version-label <%= version_label_class(version.label) %>">Version <%= version.label.upcase %></span>
+            <span class="version-votes">
+              <span style="color: var(--pg-quaternary);">&#9650;</span>
+              <%= version.votes_count %> votes
+            </span>
+          </div>
+
+          <div class="version-card-body">
+            <%= simple_format(version.content) %>
+          </div>
+
+          <% if @task.voting? %>
+            <div class="version-card-footer">
+              <div>
+                <% if is_selected %>
+                  <span class="vote-btn <%= vote_btn_class(version.label) %>" style="opacity: 0.7; cursor: default;">
+                    &#10003; Voted for Version <%= version.label.upcase %>
+                  </span>
+                  <%= link_to "Remove vote", task_vote_path(@task), data: { turbo_method: :delete }, class: "remove-vote-link" %>
+                <% elsif Current.user %>
+                  <%= button_to task_vote_path(@task), params: { draft_version_id: version.id }, class: "vote-btn #{vote_btn_class(version.label)}" do %>
+                    Vote for Version <%= version.label.upcase %> <span style="font-size: 16px;">&rarr;</span>
+                  <% end %>
+                <% else %>
+                  <%= link_to "Sign in to vote", root_path, class: "vote-btn #{vote_btn_class(version.label)}" %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Results Section (past voting) %>
+    <% unless @task.voting? || @task.drafting? %>
+      <div class="mb-20">
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+          &#127942; Results
+        </h2>
+        <div class="source-card" style="padding: 24px;">
+          <% @task.draft_versions.order(votes_count: :desc).each do |version| %>
+            <div class="flex items-center gap-4 mb-3">
+              <span class="version-label <%= version_label_class(version.label) %>">Version <%= version.label.upcase %></span>
+              <div class="flex-1">
+                <div class="vote-bar">
+                  <div class="vote-fill" style="width: <%= @task.votes.size > 0 ? (version.votes_count.to_f / @task.votes.size * 100).round : 0 %>%; background: <%= vote_bar_color(version.label) %>;"></div>
+                </div>
+              </div>
+              <span style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; min-width: 80px; text-align: right;">
+                <%= version.votes_count %> votes
+                <% if version.winner? %>
+                  <span style="color: var(--pg-quaternary);">&#9733; Winner</span>
+                <% end %>
+              </span>
+            </div>
+          <% end %>
+
+          <% if @task.pr_url.present? %>
+            <div class="mt-4 pt-4" style="border-top: 1px solid var(--pg-border-color);">
+              <span style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; color: var(--pg-muted-fg);">
+                PR Status: <strong style="color: var(--pg-fg);"><%= @task.pr_status&.humanize %></strong>
+              </span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+  </div>
+</div>

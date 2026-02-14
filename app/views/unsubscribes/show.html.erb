@@ -1,0 +1,25 @@
+<div class="pg-bg min-h-screen flex items-center justify-center">
+  <div style="max-width: 500px; text-align: center; padding: 48px;">
+    <div class="source-card" style="padding: 48px 36px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">&#128234;</div>
+      <h1 style="font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 800; margin-bottom: 12px;">
+        Unsubscribe
+      </h1>
+
+      <% if flash[:notice] %>
+        <p style="font-size: 16px; color: var(--pg-quaternary); font-weight: 600; margin-bottom: 24px;">
+          <%= flash[:notice] %>
+        </p>
+        <p style="font-size: 14px; color: var(--pg-muted-fg);">
+          You won't receive any more weekly digest emails. You can re-subscribe anytime from your
+          <%= link_to "profile settings", root_path, style: "color: var(--pg-accent); text-decoration: underline;" %>.
+        </p>
+      <% else %>
+        <p style="font-size: 15px; color: var(--pg-muted-fg); margin-bottom: 24px;">
+          Click the button below to stop receiving the weekly digest email.
+        </p>
+        <%= button_to "Unsubscribe", unsubscribe_path(token: params[:token]), class: "btn-pg", style: "background: var(--pg-accent); color: white; padding: 14px 32px; margin: 0 auto;" %>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -4,7 +4,8 @@ class DraftPickupJob < ApplicationJob
   def perform
     tasks = DocumentationTask.drafting
       .left_joins(:draft_versions)
-      .where(draft_versions: { id: nil })
+      .group(:id)
+      .having("COUNT(draft_versions.id) < 3")
       .limit(10)
 
     tasks.each do |task|

@@ -1,0 +1,86 @@
+<div class="pg-bg min-h-screen">
+  <%# Page Header %>
+  <section class="page-header relative overflow-hidden px-6 md:px-12">
+    <div class="header-deco-circle"></div>
+    <div class="max-w-6xl mx-auto relative z-10">
+      <div class="inline-flex items-center gap-1.5 mb-3" style="font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--pg-accent);">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--pg-accent); display: inline-block;"></span>
+        Documentation Tasks
+      </div>
+      <h1 style="font-family: 'Outfit', sans-serif; font-size: clamp(36px, 5vw, 56px); font-weight: 800; margin-bottom: 12px; color: var(--pg-fg);">
+        Browse & Vote
+      </h1>
+      <p style="font-size: 18px; color: var(--pg-muted-fg); max-width: 560px; line-height: 1.6;">
+        Read AI-generated documentation drafts and vote for the best one.
+      </p>
+    </div>
+  </section>
+
+  <%# Filter Bar %>
+  <div class="px-6 md:px-12 pb-10 max-w-6xl mx-auto">
+    <div class="flex flex-wrap items-center gap-4">
+      <span style="font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--pg-muted-fg);">Status</span>
+      <div class="flex flex-wrap items-center gap-2">
+        <%= filter_pill_link "Voting", "voting", params[:status] || "voting" %>
+        <%= filter_pill_link "Pending Review", "pending_review", params[:status] || "voting" %>
+        <%= filter_pill_link "Submitted", "submitted", params[:status] || "voting" %>
+        <%= filter_pill_link "Merged", "merged", params[:status] || "voting" %>
+        <%= filter_pill_link "All", "all", params[:status] || "voting" %>
+      </div>
+
+      <div style="width: 2px; height: 28px; background: var(--pg-border-color); margin: 0 8px;" class="hidden md:block"></div>
+
+      <span style="font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--pg-muted-fg);">Sort</span>
+      <div class="flex flex-wrap items-center gap-2">
+        <%= sort_pill_link "Newest", "newest", params[:sort] %>
+        <%= sort_pill_link "Most Votes", "most_votes", params[:sort] %>
+      </div>
+    </div>
+  </div>
+
+  <%# Task Cards Grid %>
+  <div class="px-6 md:px-12 pb-16 max-w-6xl mx-auto relative">
+    <div class="dot-bg absolute inset-0 rounded-3xl opacity-50 pointer-events-none" style="margin: -20px; z-index: 0;"></div>
+    <% if @tasks.any? %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+        <% @tasks.each do |task| %>
+          <%= render partial: "tasks/task_card", locals: { task: task } %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-20 relative z-10">
+        <p style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; color: var(--pg-muted-fg);">
+          No tasks found
+        </p>
+        <p style="font-size: 15px; color: var(--pg-muted-fg); margin-top: 8px;">
+          Try a different filter or check back later.
+        </p>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Pagination %>
+  <% if @total_pages > 1 %>
+    <div class="flex items-center justify-center gap-4 px-6 pb-20">
+      <% if @page > 1 %>
+        <%= link_to tasks_path(page: @page - 1, status: params[:status], sort: params[:sort]), class: "page-btn" do %>
+          &larr; Previous
+        <% end %>
+      <% else %>
+        <span class="page-btn disabled">&larr; Previous</span>
+      <% end %>
+
+      <span style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; color: var(--pg-muted-fg);">
+        Page <strong style="color: var(--pg-fg);"><%= @page %></strong> of <strong style="color: var(--pg-fg);"><%= @total_pages %></strong>
+      </span>
+
+      <% if @page < @total_pages %>
+        <%= link_to tasks_path(page: @page + 1, status: params[:status], sort: params[:sort]), class: "page-btn" do %>
+          Next &rarr;
+        <% end %>
+      <% else %>
+        <span class="page-btn disabled">Next &rarr;</span>
+      <% end %>
+    </div>
+  <% end %>
+</div>

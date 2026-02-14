@@ -19,3 +19,9 @@ production:
   draft_pickup:
     class: DraftPickupJob
     schedule: every 5 minutes
+  daily_pr_status_check:
+    class: PrStatusCheckJob
+    schedule: every day at 7am
+  weekly_digest:
+    class: WeeklyDigestJob
+    schedule: every Monday at 9am

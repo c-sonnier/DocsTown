@@ -59,6 +59,22 @@ class DocumentationTaskTest < ActiveSupport::TestCase
     assert_equal "Needs more detail", @task.reviewer_note
   end
 
+  test "reject! clears winner flag so a different draft can win" do
+    draft_a = create(:draft_version, documentation_task: @task, label: :a, winner: true, votes_count: 5)
+    draft_b = create(:draft_version, documentation_task: @task, label: :b, votes_count: 15)
+    @task.update!(status: :pending_review)
+
+    @task.reject!(note: "Try again")
+    assert_not draft_a.reload.winner
+
+    @task.update!(status: :voting)
+    draft_b.update!(votes_count: 25)
+    create_list(:vote, 25, documentation_task: @task, draft_version: draft_b)
+
+    assert_nothing_raised { @task.finalize_consensus! }
+    assert draft_b.reload.winner
+  end
+
   test "mark_merged! transitions from submitted to merged" do
     @task.update!(status: :submitted)
     @task.mark_merged!

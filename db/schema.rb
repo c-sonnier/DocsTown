@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_13_155459) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_14_193823) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -26,9 +26,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_13_155459) do
     t.string "source_file_path", null: false
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_documentation_tasks_on_created_at"
     t.index ["pr_status"], name: "index_documentation_tasks_on_pr_status"
     t.index ["project_id", "method_signature"], name: "index_documentation_tasks_on_project_id_and_method_signature", unique: true
     t.index ["project_id"], name: "index_documentation_tasks_on_project_id"
+    t.index ["status", "created_at"], name: "index_documentation_tasks_on_status_and_created_at", order: { created_at: :desc }
     t.index ["status"], name: "index_documentation_tasks_on_status"
   end
 
@@ -64,6 +66,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_13_155459) do
     t.string "email"
     t.string "github_uid", null: false
     t.string "github_username", null: false
+    t.datetime "last_digest_sent_at"
     t.integer "role", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["github_uid"], name: "index_users_on_github_uid", unique: true

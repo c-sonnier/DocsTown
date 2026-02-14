@@ -14,3 +14,18 @@ module ActiveSupport
     fixtures :all
   end
 end
+
+class ActionDispatch::IntegrationTest
+  def sign_in(user)
+    OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new(
+      provider: "github",
+      uid: user.github_uid,
+      info: {
+        nickname: user.github_username,
+        image: user.avatar_url,
+        email: user.email
+      }
+    )
+    get "/auth/github/callback"
+  end
+end

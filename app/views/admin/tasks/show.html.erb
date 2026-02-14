@@ -1,0 +1,157 @@
+<div class="pg-bg min-h-screen">
+
+  <%# Breadcrumb %>
+  <div class="max-w-4xl mx-auto px-6 md:px-12">
+    <div class="flex items-center gap-2 py-5" style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; color: var(--pg-muted-fg);">
+      <%= link_to admin_tasks_path, class: "bc-back" do %>&larr;<% end %>
+      <%= link_to "Admin", admin_tasks_path, style: "text-decoration: none; color: var(--pg-muted-fg); transition: color 0.2s;", class: "hover:text-purple-500" %>
+      <span style="opacity: 0.4;">&rarr;</span>
+      <span style="color: var(--pg-fg);"><%= @task.method_signature %></span>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-6 md:px-12 py-9">
+
+    <%# Task Overview %>
+    <div class="task-overview">
+      <div class="flex items-start justify-between gap-4 mb-4">
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: clamp(24px, 3vw, 32px); font-weight: 800;">
+          <code style="background: #F3EEFF; padding: 2px 12px; border-radius: 10px; color: var(--pg-accent);"><%= @task.method_signature %></code>
+        </h1>
+        <span class="status-badge status-pending_review" style="flex-shrink: 0;">
+          Pending Review
+        </span>
+      </div>
+      <div style="font-size: 14px; color: var(--pg-muted-fg); display: flex; flex-direction: column; gap: 8px;">
+        <div class="flex items-center gap-2">
+          <span style="width: 20px; text-align: center;">&#128193;</span>
+          Source: <code style="background: var(--pg-muted); padding: 2px 8px; border-radius: 6px; font-size: 13px; color: var(--pg-fg);"><%= @task.source_file_path %></code>
+        </div>
+        <div class="flex items-center gap-2">
+          <span style="width: 20px; text-align: center;">&#9989;</span>
+          <strong style="color: var(--pg-fg);"><%= @task.votes.size %></strong> total votes
+        </div>
+      </div>
+    </div>
+
+    <%# Vote Breakdown %>
+    <div class="vote-section">
+      <div class="section-label">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--pg-accent);"></span>
+        Vote Breakdown
+      </div>
+      <div class="flex flex-col gap-4">
+        <% @task.draft_versions.order(votes_count: :desc).each do |version| %>
+          <div class="vote-row<%= ' vote-row-winner' if version.winner? %>">
+            <div style="width: 24px; flex-shrink: 0; text-align: center;">
+              <% if version.winner? %>
+                <span style="font-size: 20px; line-height: 1;">&#127942;</span>
+              <% end %>
+            </div>
+            <div style="width: 120px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700;">
+              <span class="version-label <%= version_label_class(version.label) %>" style="font-size: 12px; padding: 3px 10px;">
+                <%= version.label.upcase %>
+              </span>
+              Version <%= version.label.upcase %>
+            </div>
+            <div class="vote-bar-track">
+              <% pct = @task.votes.size > 0 ? (version.votes_count.to_f / @task.votes.size * 100).round : 0 %>
+              <div class="vote-bar-fill-admin version-<%= version.label %>" style="width: <%= pct %>%;"><%= pct %>%</div>
+            </div>
+            <div style="width: 100px; flex-shrink: 0; text-align: right; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; color: var(--pg-muted-fg);">
+              <%= version.votes_count %> votes
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Winning Documentation Preview %>
+    <% if @winning_version %>
+      <div class="winning-doc">
+        <div class="winning-doc-badge">&#127942; Winner &mdash; Version <%= @winning_version.label.upcase %></div>
+        <div style="font-size: 15px; line-height: 1.7; color: var(--pg-fg);">
+          <%= simple_format(@winning_version.content) %>
+        </div>
+      </div>
+    <% end %>
+
+    <%# All Versions (collapsible) %>
+    <div class="source-card" data-controller="source-toggle">
+      <div class="source-card-header" data-action="click->source-toggle#toggle">
+        <span style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700;">
+          All Versions (<%= @task.draft_versions.size %>)
+        </span>
+        <span style="font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; color: var(--pg-accent); display: flex; align-items: center; gap: 6px;">
+          <span data-source-toggle-target="label">Show all</span>
+          <span data-source-toggle-target="arrow" style="display: inline-block; transition: transform 0.3s var(--pg-bounce);">&#9660;</span>
+        </span>
+      </div>
+      <div data-source-toggle-target="body" style="overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease; max-height: 0px; opacity: 0;">
+        <div style="padding: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+          <% @task.draft_versions.order(:label).each do |version| %>
+            <div style="border: var(--pg-border); border-radius: 16px; overflow: hidden;">
+              <div style="padding: 12px 16px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; border-bottom: var(--pg-border);"
+                   class="<%= "version-label-#{version.label}" %>"
+                   style="background: <%= { 'a' => 'var(--pg-accent)', 'b' => 'var(--pg-secondary)', 'c' => 'var(--pg-tertiary)' }[version.label] %>; color: <%= version.label == 'c' ? 'var(--pg-fg)' : 'white' %>; padding: 12px 16px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; border-bottom: var(--pg-border);">
+                Version <%= version.label.upcase %>
+                <span style="font-size: 12px; opacity: 0.85;"><%= version.votes_count %> votes</span>
+              </div>
+              <div style="padding: 16px; font-size: 13px; line-height: 1.6; color: var(--pg-muted-fg); max-height: 200px; overflow-y: auto;">
+                <%= simple_format(truncate(version.content, length: 300)) %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <%# Action Section %>
+    <% if @task.pending_review? %>
+      <div class="action-section mt-8">
+        <div style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 20px; text-align: center;">
+          Admin Decision
+        </div>
+        <div class="flex gap-4 justify-center mb-4" data-controller="rejection-toggle">
+          <%= button_to approve_admin_task_path(@task), class: "btn-pg btn-approve" do %>
+            &#9989; Approve & Submit PR
+          <% end %>
+          <button type="button" class="btn-pg btn-reject" data-action="click->rejection-toggle#toggle">
+            &#10007; Reject with Note
+          </button>
+
+          <%# Rejection Note Area %>
+          <div data-rejection-toggle-target="area" style="display: none; width: 100%; margin-top: 24px; padding-top: 24px; border-top: 2px dashed var(--pg-border-color);">
+            <%= form_with url: reject_admin_task_path(@task), method: :post, style: "width: 100%;" do |f| %>
+              <label style="display: block; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 10px;">
+                Rejection Note
+              </label>
+              <textarea name="reviewer_note" class="rejection-textarea" placeholder="Explain why this needs revision..."></textarea>
+              <div class="flex gap-3 items-center mt-3">
+                <%= f.submit "Send Back to Voting", class: "btn-pg", style: "background: #EF4444; color: white; font-size: 14px; padding: 12px 24px;" %>
+                <button type="button" class="btn-pg" style="background: transparent; border: none; box-shadow: none; color: var(--pg-muted-fg); font-size: 14px;" data-action="click->rejection-toggle#toggle">
+                  Cancel
+                </button>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <div style="text-align: center; font-size: 13px; color: var(--pg-muted-fg); font-style: italic;">
+          Approving will automatically submit a PR to <strong>rails/rails</strong>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @task.reviewer_note.present? %>
+      <div class="source-card" style="padding: 24px; margin-top: 24px; border-left: 4px solid #EF4444;">
+        <div style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 8px; color: #EF4444;">
+          Previous Rejection Note
+        </div>
+        <div style="font-size: 14px; line-height: 1.6; color: var(--pg-muted-fg);">
+          <%= @task.reviewer_note %>
+        </div>
+      </div>
+    <% end %>
+
+  </div>
+</div>

@@ -1,7 +1,7 @@
 Rails.application.config.middleware.use OmniAuth::Builder do
   provider :github,
-    Rails.application.credentials.dig(:github, :oauth_app_id),
-    Rails.application.credentials.dig(:github, :oauth_secret),
+    Rails.application.credentials.dig(:github, :client_id),
+    Rails.application.credentials.dig(:github, :client_secret),
     scope: "user:email"
 end
 

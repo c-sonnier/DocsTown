@@ -1,23 +1,30 @@
-<nav class="bg-white shadow">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between h-16 items-center">
-      <div class="flex items-center">
-        <%= link_to "DocsTown", root_path, class: "text-xl font-bold text-gray-900" %>
-      </div>
+<nav class="app-nav">
+  <%= link_to root_path, class: "logo" do %>
+    <img src="/docstown_logo.png" alt="DocsTown" style="height:50px;width:auto;">
+  <% end %>
 
-      <div class="flex items-center space-x-4">
-        <% if Current.user %>
-          <div class="flex items-center space-x-3">
-            <% if Current.user.avatar_url.present? %>
-              <%= image_tag Current.user.avatar_url, class: "h-8 w-8 rounded-full", alt: Current.user.github_username %>
-            <% end %>
-            <span class="text-sm text-gray-700"><%= Current.user.github_username %></span>
-            <%= button_to "Sign out", logout_path, method: :delete, class: "text-sm text-gray-500 hover:text-gray-700" %>
-          </div>
-        <% else %>
-          <%= button_to "Sign in with GitHub", "/auth/github", data: { turbo: false }, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-700" %>
-        <% end %>
-      </div>
-    </div>
+  <ul class="nav-links">
+    <li><%= link_to "Tasks", tasks_path, class: ("active" if controller_name == "tasks" && !controller.class.module_parent_name) %></li>
+    <% if Current.user %>
+      <li><%= link_to "Dashboard", authenticated_root_path, class: ("active" if controller_name == "dashboards") %></li>
+      <li><%= link_to "Settings", profile_path, class: ("active" if controller_name == "profiles") %></li>
+      <% if Current.user.maintainer? || Current.user.admin? %>
+        <li><%= link_to "Admin", admin_tasks_path, class: ("active" if controller.class.module_parent_name == "Admin") %></li>
+      <% end %>
+    <% end %>
+  </ul>
+
+  <div class="nav-user">
+    <% if Current.user %>
+      <% if Current.user.avatar_url.present? %>
+        <div class="nav-avatar">
+          <%= image_tag Current.user.avatar_url, alt: Current.user.github_username %>
+        </div>
+      <% end %>
+      <span class="nav-username"><%= Current.user.github_username %></span>
+      <%= button_to "Sign Out", logout_path, method: :delete, class: "nav-signout" %>
+    <% else %>
+      <%= button_to "Sign in with GitHub", "/auth/github", data: { turbo: false }, class: "btn btn-primary btn-sm" %>
+    <% end %>
   </div>
 </nav>

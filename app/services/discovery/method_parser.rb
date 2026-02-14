@@ -49,12 +49,14 @@ module Discovery
       visitor = MethodVisitor.new(source, relative_path)
       result.value.accept(visitor)
       visitor.undocumented_methods
-    rescue => e
+    rescue Prism::ParseError => e
       Rails.logger.warn("MethodParser: failed to parse #{file_path}: #{e.message}")
       []
     end
 
     class MethodVisitor < Prism::Visitor
+      include Discovery::NamespaceTracking
+
       attr_reader :undocumented_methods
 
       def initialize(source, file_path)
@@ -62,27 +64,23 @@ module Discovery
         @source_lines = source.lines
         @file_path = file_path
         @undocumented_methods = []
-        @namespace_stack = []
+        initialize_namespace_tracking
         @visibility = :public
         @visibility_stack = []
       end
 
       def visit_class_node(node)
-        @namespace_stack.push(node_name(node))
         @visibility_stack.push(@visibility)
         @visibility = :public
         super
         @visibility = @visibility_stack.pop
-        @namespace_stack.pop
       end
 
       def visit_module_node(node)
-        @namespace_stack.push(node_name(node))
         @visibility_stack.push(@visibility)
         @visibility = :public
         super
         @visibility = @visibility_stack.pop
-        @namespace_stack.pop
       end
 
       def visit_def_node(node)
@@ -122,26 +120,6 @@ module Discovery
       end
 
       private
-
-      def node_name(node)
-        case node
-        when Prism::ClassNode
-          node.constant_path.slice
-        when Prism::ModuleNode
-          node.constant_path.slice
-        end
-      end
-
-      def build_signature(node)
-        prefix = current_namespace
-        separator = node.receiver ? "." : "#"
-        name = node.name.to_s
-        prefix.empty? ? name : "#{prefix}#{separator}#{name}"
-      end
-
-      def current_namespace
-        @namespace_stack.join("::")
-      end
 
       def documented?(node)
         start_line = node.location.start_line - 1

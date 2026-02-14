@@ -1,4 +1,9 @@
 class SessionsController < ApplicationController
+  FAILURE_MESSAGES = {
+    "csrf_detected" => "Request verification failed. Please try again.",
+    "invalid_credentials" => "Authentication failed."
+  }.freeze
+
   def create
     auth = request.env["omniauth.auth"]
     user = User.find_or_initialize_by(github_uid: auth.uid)
@@ -8,6 +13,7 @@ class SessionsController < ApplicationController
       email: auth.info.email
     )
 
+    reset_session
     session[:user_id] = user.id
     Current.user = user
 
@@ -22,6 +28,7 @@ class SessionsController < ApplicationController
   end
 
   def failure
-    redirect_to root_path, alert: "Authentication failed: #{params[:message].to_s.humanize}"
+    msg = FAILURE_MESSAGES[params[:message].to_s] || "Authentication failed. Please try again."
+    redirect_to root_path, alert: msg
   end
 end

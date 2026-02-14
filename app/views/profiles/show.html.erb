@@ -1,0 +1,106 @@
+<div class="pg-bg min-h-screen">
+  <div style="max-width: 740px; margin: 0 auto; padding: 32px 48px 80px;">
+
+    <%# Page Header %>
+    <div style="padding-top: 16px; margin-bottom: 32px;">
+      <div class="section-label" style="margin-bottom: 12px;">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--pg-accent);"></span>
+        Settings
+      </div>
+      <h1 style="font-family: 'Outfit', sans-serif; font-size: clamp(32px, 4vw, 44px); font-weight: 800; margin-bottom: 8px;">
+        Your Preferences
+      </h1>
+      <p style="font-size: 17px; color: var(--pg-muted-fg);">Manage your account and notification settings.</p>
+    </div>
+
+    <%# Profile Card %>
+    <div class="source-card" style="padding: 32px; margin-bottom: 24px;">
+      <div style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 10px;">
+        &#128100; Profile
+      </div>
+      <div class="flex items-center gap-6">
+        <% if @user.avatar_url.present? %>
+          <%= image_tag @user.avatar_url, style: "width: 80px; height: 80px; border-radius: 50%; border: var(--pg-border); object-fit: cover; box-shadow: 3px 3px 0px var(--pg-fg);" %>
+        <% end %>
+        <div>
+          <div style="font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 4px;">
+            <%= @user.github_username %>
+          </div>
+          <div style="font-size: 14px; color: var(--pg-muted-fg); margin-bottom: 12px;">
+            Member since <%= @user.created_at.strftime("%B %Y") %>
+          </div>
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; color: #065F46; background: #ECFDF5; border: 2px solid var(--pg-quaternary); border-radius: 9999px; padding: 6px 16px;">
+            &#10003; Connected via GitHub
+          </span>
+        </div>
+      </div>
+      <div style="margin-top: 16px; font-size: 13px; color: var(--pg-muted-fg); font-style: italic;">
+        Profile info syncs from your GitHub account
+      </div>
+    </div>
+
+    <%= form_with model: @user, url: profile_path, method: :patch do |f| %>
+
+      <%# Email Card %>
+      <div class="source-card" style="padding: 32px; margin-bottom: 24px;">
+        <div style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 10px;">
+          &#9993;&#65039; Email
+        </div>
+        <div class="flex gap-3 items-end">
+          <div style="flex: 1;">
+            <label style="display: block; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--pg-fg); margin-bottom: 10px;">
+              Email Address
+            </label>
+            <%= f.email_field :email, class: "form-input", placeholder: "your@email.com", style: "width: 100%; padding: 14px 18px; font-size: 15px; border: 2px solid #CBD5E1; border-radius: 16px; outline: none; background: var(--pg-card); color: var(--pg-fg);" %>
+          </div>
+        </div>
+      </div>
+
+      <%# Notifications Card %>
+      <div class="source-card" style="padding: 32px; margin-bottom: 24px;">
+        <div style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 10px;">
+          &#128276; Notifications
+        </div>
+        <div class="flex items-start justify-between gap-5">
+          <div style="flex: 1;">
+            <div style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 4px;">
+              Weekly Digest Email
+            </div>
+            <div style="font-size: 14px; color: var(--pg-muted-fg); line-height: 1.55;">
+              Receive a summary of new documentation tasks, vote results, and merged PRs every Monday.
+            </div>
+          </div>
+          <label class="toggle-switch" style="flex-shrink: 0; margin-top: 4px;">
+            <%= f.check_box :digest_opted_in, class: "toggle-input" %>
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 2px dashed var(--pg-border-color);">
+          <div style="font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--pg-muted-fg); margin-bottom: 14px;">
+            What's Included
+          </div>
+          <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
+            <li style="font-size: 14px; color: var(--pg-muted-fg); display: flex; align-items: center; gap: 10px;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--pg-accent); flex-shrink: 0;"></span>
+              New tasks available for voting
+            </li>
+            <li style="font-size: 14px; color: var(--pg-muted-fg); display: flex; align-items: center; gap: 10px;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--pg-secondary); flex-shrink: 0;"></span>
+              Tasks nearing consensus
+            </li>
+            <li style="font-size: 14px; color: var(--pg-muted-fg); display: flex; align-items: center; gap: 10px;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--pg-quaternary); flex-shrink: 0;"></span>
+              PRs submitted and merged
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <%# Save %>
+      <div class="flex justify-end">
+        <%= f.submit "Save Changes", class: "btn-pg", style: "background: var(--pg-accent); color: white; padding: 14px 32px;" %>
+      </div>
+
+    <% end %>
+  </div>
+</div>

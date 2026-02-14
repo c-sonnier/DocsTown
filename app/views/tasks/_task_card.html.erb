@@ -1,0 +1,36 @@
+<%= link_to task_path(task), class: "task-card" do %>
+  <div class="flex items-center justify-between">
+    <span class="status-badge status-<%= task.status %>">
+      <span class="status-badge-dot"></span>
+      <%= status_label(task.status) %>
+    </span>
+    <div class="flex gap-1.5">
+      <% task.draft_versions.sort_by(&:label).each do |dv| %>
+        <span style="width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--pg-fg); background: <%= { 'a' => 'var(--pg-accent)', 'b' => 'var(--pg-secondary)', 'c' => 'var(--pg-tertiary)' }[dv.label] %>;"></span>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="method-signature"><%= task.method_signature %></div>
+  <div class="source-path"><%= task.source_file_path %></div>
+
+  <div class="flex flex-col gap-2">
+    <div class="vote-bar">
+      <div class="vote-fill" style="width: <%= vote_progress_percentage(task) %>%; background: <%= vote_progress_color(task) %>;"></div>
+    </div>
+    <div class="flex justify-between items-center">
+      <span style="font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; color: var(--pg-muted-fg);">
+        <strong style="color: var(--pg-fg);"><%= task.votes.size %></strong> / <%= DocumentationTask::CONSENSUS_VOTE_THRESHOLD %> votes
+      </span>
+      <span style="font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; color: var(--pg-muted-fg);">
+        <% if task.merged? && task.pr_url.present? %>
+          Merged!
+        <% elsif task.submitted? && task.pr_url.present? %>
+          PR submitted
+        <% else %>
+          <%= vote_progress_percentage(task) %>%
+        <% end %>
+      </span>
+    </div>
+  </div>
+<% end %>

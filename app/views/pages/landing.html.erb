@@ -1,0 +1,329 @@
+<% content_for(:title, "DocsTown — Crowdsourced Documentation, Powered by LLMs") %>
+
+<% content_for(:landing_page) do %>
+
+<!-- LANDING NAV -->
+<nav class="landing-nav">
+  <div class="logo"><img src="/docstown_logo.png" alt="DocsTown" style="height:50px;width:auto;"></div>
+  <ul class="nav-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#why">Why</a></li>
+    <li><a href="#compare">Compare</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#join">Join</a></li>
+  </ul>
+</nav>
+
+<% if notice %>
+  <div class="flash-container" data-controller="flash">
+    <div class="flash flash-notice">
+      <span><%= notice %></span>
+      <button class="flash-close" data-action="flash#dismiss">✕</button>
+    </div>
+  </div>
+<% end %>
+
+<% if alert %>
+  <div class="flash-container" data-controller="flash">
+    <div class="flash flash-alert">
+      <span><%= alert %></span>
+      <button class="flash-close" data-action="flash#dismiss">✕</button>
+    </div>
+  </div>
+<% end %>
+
+<!-- MARQUEE -->
+<div class="marquee-bar">
+  <div class="marquee-track">
+    <div class="marquee-content">
+      <span>Open Source Docs Need Your Vote</span>
+      <span class="marquee-dot v"></span>
+      <span>LLM-Powered</span>
+      <span class="marquee-dot p"></span>
+      <span>Human-Curated</span>
+      <span class="marquee-dot y"></span>
+      <span>3 AI Drafts → Community Votes → Merged PR</span>
+      <span class="marquee-dot g"></span>
+      <span>Stop Suffering Through Bad Documentation</span>
+      <span class="marquee-dot v"></span>
+      <span>Open Source Docs Need Your Vote</span>
+      <span class="marquee-dot p"></span>
+      <span>LLM-Powered</span>
+      <span class="marquee-dot y"></span>
+      <span>Human-Curated</span>
+      <span class="marquee-dot g"></span>
+      <span>3 AI Drafts → Community Votes → Merged PR</span>
+      <span class="marquee-dot v"></span>
+      <span>Stop Suffering Through Bad Documentation</span>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="shape shape-circle" style="width:80px;height:80px;background:rgba(139,92,246,0.1);top:15%;right:8%;animation:float1 4s ease-in-out infinite;"></div>
+  <div class="shape shape-triangle" style="top:70%;right:4%;animation:float2 5s ease-in-out infinite;"></div>
+  <div class="shape shape-circle" style="width:40px;height:40px;background:rgba(244,114,182,0.15);bottom:20%;left:45%;animation:float3 6s ease-in-out infinite;"></div>
+
+  <div class="hero-text">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      It takes a town to raise great docs.
+    </div>
+    <h1>
+      Docs are<br>
+      <span class="highlight">broken.</span><br>
+      Let's fix them<br>
+      <span class="highlight-green">together.</span>
+    </h1>
+    <p>
+      <strong>Three AIs write the docs.</strong> The community picks the best one. The PR submits itself. Open source documentation has never been this easy — or this democratic.
+    </p>
+    <div class="btn-group">
+      <%= button_to "Start Voting →", "/auth/github", data: { turbo: false }, class: "btn btn-primary" %>
+      <a href="#how" class="btn btn-secondary">See How It Works</a>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="doc-card">
+      <div class="doc-card-header">
+        <span class="doc-card-label label-a">Version A</span>
+        <span class="vote-count"><span class="arrow">▲</span> 142 votes</span>
+      </div>
+      <p><code>ActiveRecord::Base.connection_pool</code> manages a pool of database connections that can be shared among threads.</p>
+      <div class="vote-bar"><div class="vote-fill" style="width:72%;background:var(--pg-accent);"></div></div>
+    </div>
+    <div class="doc-card">
+      <div class="doc-card-header">
+        <span class="doc-card-label label-b">Version B</span>
+        <span class="vote-count"><span class="arrow">▲</span> 89 votes</span>
+      </div>
+      <p>The connection pool acts as a gatekeeper between your application and the database. Think of it as a checkout counter.</p>
+      <div class="vote-bar"><div class="vote-fill" style="width:45%;background:var(--pg-secondary);"></div></div>
+    </div>
+    <div class="doc-card">
+      <div class="doc-card-header">
+        <span class="doc-card-label label-c">Version C</span>
+        <span class="vote-count"><span class="arrow">▲</span> 61 votes</span>
+      </div>
+      <p># ConnectionPool — Manages reusable database connections. Key methods: <code>checkout</code>, <code>checkin</code>, <code>with_connection</code>.</p>
+      <div class="vote-bar"><div class="vote-fill" style="width:31%;background:var(--pg-tertiary);"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- STRIP -->
+<div class="strip">
+  <span class="strip-shape strip-circle"></span>
+  AI Writes It &nbsp;→&nbsp; Community Votes &nbsp;→&nbsp; PR Ships
+  <span class="strip-shape strip-square"></span>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works dot-bg" id="how">
+  <div class="section-header">
+    <div class="section-tag"><span class="section-tag-dot"></span> The Process</div>
+    <h2 class="landing-section-title">How It Works</h2>
+    <p class="section-subtitle">Four simple steps from documentation gap to merged pull request.</p>
+  </div>
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-icon">🔍</div>
+      <h3>Discover</h3>
+      <p>An LLM scans the codebase and identifies areas with missing, outdated, or thin documentation.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-icon">✍️</div>
+      <h3>Draft × 3</h3>
+      <p>Three independent LLMs each write their own version of the documentation. Different styles, same gap.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-icon">🗳️</div>
+      <h3>Vote</h3>
+      <p>The community reviews all three versions and votes for the one that's clearest and most helpful.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-icon">🚀</div>
+      <h3>Ship</h3>
+      <p>Once a version hits the vote threshold, the system auto-generates and submits a pull request to the project.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM SECTION -->
+<section class="problem" id="why">
+  <div class="deco-circle" style="width:300px;height:300px;top:-80px;right:-80px;"></div>
+  <div class="deco-circle" style="width:180px;height:180px;bottom:-60px;left:-40px;"></div>
+  <div class="section-header">
+    <div class="section-tag"><span class="section-tag-dot"></span> The Problem</div>
+    <h2 class="landing-section-title">The Documentation Problem</h2>
+    <p class="section-subtitle">Great code deserves great docs. But nobody wants to go through the hassle.</p>
+  </div>
+  <div class="problem-grid">
+    <div class="problem-card bad reveal">
+      <h3><span class="icon-circle">✗</span> Today's Reality</h3>
+      <ul>
+        <li>Contributing docs requires forking, cloning, writing, and submitting PRs</li>
+        <li>Most developers just don't bother — the friction is too high</li>
+        <li>Critical methods go undocumented for years</li>
+        <li>Docs go stale as APIs evolve but nobody updates the text</li>
+        <li>LLMs alone can write docs, but who ensures quality?</li>
+      </ul>
+    </div>
+    <div class="problem-card good reveal">
+      <h3><span class="icon-circle">✓</span> With DocsTown</h3>
+      <ul>
+        <li>Contributing is as easy as reading and clicking a button</li>
+        <li>LLMs handle the heavy lifting of writing first drafts</li>
+        <li>Humans curate and validate — the best of both worlds</li>
+        <li>Weekly email digests keep contributors engaged</li>
+        <li>PRs auto-submit when the community reaches consensus</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="landing-stats">
+  <div class="stat reveal">
+    <div class="stat-number"><%= @stats[:tasks_created] %></div>
+    <div class="stat-label">Tasks<br>Created</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-number"><%= @stats[:votes_cast] %></div>
+    <div class="stat-label">Votes<br>Cast</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-number"><%= @stats[:prs_submitted] %></div>
+    <div class="stat-label">PRs<br>Submitted</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-number"><%= @stats[:prs_merged] %></div>
+    <div class="stat-label">PRs<br>Merged</div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section class="comparison dot-bg" id="compare">
+  <div class="section-header">
+    <div class="section-tag"><span class="section-tag-dot"></span> Why Not Existing Tools?</div>
+    <h2 class="landing-section-title">Not Another Issue Inbox</h2>
+  </div>
+  <div class="comparison-table reveal">
+    <div class="comparison-row header">
+      <div class="comparison-cell"></div>
+      <div class="comparison-cell">Traditional Tools <span class="comparison-tag tag-old">Manual</span></div>
+      <div class="comparison-cell">DocsTown <span class="comparison-tag tag-new">Automated</span></div>
+    </div>
+    <div class="comparison-row">
+      <div class="comparison-cell">Discovery</div>
+      <div class="comparison-cell">You browse open issues and hope to find one you understand</div>
+      <div class="comparison-cell">LLMs scan the codebase and identify documentation gaps automatically</div>
+    </div>
+    <div class="comparison-row">
+      <div class="comparison-cell">Writing</div>
+      <div class="comparison-cell">You write the docs from scratch — reading source code, tests, and prior art</div>
+      <div class="comparison-cell">3 LLMs draft independent versions. You just read and vote.</div>
+    </div>
+    <div class="comparison-row">
+      <div class="comparison-cell">Git Workflow</div>
+      <div class="comparison-cell">Fork → Clone → Branch → Write → Commit → Push → Open PR</div>
+      <div class="comparison-cell">Click a button. That's it.</div>
+    </div>
+    <div class="comparison-row">
+      <div class="comparison-cell">Time</div>
+      <div class="comparison-cell">30 min – 2 hours per contribution</div>
+      <div class="comparison-cell">2 minutes to read and vote</div>
+    </div>
+    <div class="comparison-row">
+      <div class="comparison-cell">Quality</div>
+      <div class="comparison-cell">Relies on maintainer review (often backlogged)</div>
+      <div class="comparison-cell">Community consensus + maintainer final approval</div>
+    </div>
+    <div class="comparison-row">
+      <div class="comparison-cell">PR Submission</div>
+      <div class="comparison-cell">Manual — you manage the entire PR lifecycle</div>
+      <div class="comparison-cell">Automatic — system submits when vote threshold is reached</div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section class="use-cases" id="projects">
+  <div class="section-header">
+    <div class="section-tag"><span class="section-tag-dot"></span> Use Cases</div>
+    <h2 class="landing-section-title">Built For Projects Like</h2>
+    <p class="section-subtitle">Any open source project with documentation debt — which is basically all of them.</p>
+  </div>
+  <div class="use-case-grid">
+    <div class="use-case reveal">
+      <div class="use-case-header"><span class="uc-icon">◆</span> Frameworks</div>
+      <div class="use-case-body">
+        <h3>Ruby on Rails</h3>
+        <p>Thousands of methods across ActiveRecord, ActionPack, and ActionMailer with sparse or missing docs. The perfect candidate.</p>
+      </div>
+    </div>
+    <div class="use-case reveal">
+      <div class="use-case-header"><span class="uc-icon">◆</span> Languages</div>
+      <div class="use-case-body">
+        <h3>Any OSS Project</h3>
+        <p>From React to Django to Phoenix — every open source project struggles with documentation debt. DocsTown is framework agnostic.</p>
+      </div>
+    </div>
+    <div class="use-case reveal">
+      <div class="use-case-header"><span class="uc-icon">◆</span> Libraries</div>
+      <div class="use-case-body">
+        <h3>Your Favorite Gem</h3>
+        <p>Small libraries often have zero docs beyond a README. DocsTown makes it trivially easy to give them the documentation they deserve.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STRIP 2 -->
+<div class="strip">
+  <span class="strip-shape strip-tri"></span>
+  No Git Required
+  <span class="strip-shape strip-circle"></span>
+  Vote in 2 Minutes
+  <span class="strip-shape strip-square"></span>
+  Ship Better Docs
+  <span class="strip-shape strip-tri"></span>
+</div>
+
+<!-- CTA -->
+<section class="cta" id="join">
+  <div class="cta-badge">✨ Join the Community</div>
+  <h2>Ready to fix<br>open source docs?</h2>
+  <p>Sign in with GitHub to start voting on documentation. Help improve open source projects, one vote at a time.</p>
+  <div class="btn-group" style="justify-content:center;">
+    <%= button_to "Sign in with GitHub →", "/auth/github", data: { turbo: false }, class: "btn btn-primary" %>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="landing-footer">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="footer-logo">DocsTown</div>
+    <span style="opacity:0.4;">© <%= Date.current.year %></span>
+  </div>
+  <div>Crafted by: <a href="https://x.com/c_sonnier" target="_blank" rel="noopener">@c_sonnier</a></div>
+</footer>
+
+<script>
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const parent = entry.target.parentElement;
+        const siblings = [...parent.querySelectorAll('.reveal')];
+        const idx = siblings.indexOf(entry.target);
+        entry.target.style.transitionDelay = `${idx * 0.1}s`;
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+</script>
+
+<% end %>

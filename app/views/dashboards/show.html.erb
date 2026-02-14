@@ -1,0 +1,104 @@
+<% content_for(:title, "Dashboard — DocsTown") %>
+
+<div class="dashboard">
+  <!-- WELCOME HEADER -->
+  <section class="welcome">
+    <h1>
+      👋 Welcome back, <span class="welcome-name"><%= Current.user.github_username %></span>
+    </h1>
+    <p class="welcome-subtitle">Here's your contribution activity</p>
+  </section>
+
+  <!-- STATS ROW -->
+  <section class="stats-section">
+    <div class="stats-deco-circle"></div>
+    <div class="dash-stats">
+      <div class="stat">
+        <div class="stat-number"><%= @stats[:total_votes] %></div>
+        <div class="stat-label">Votes Cast</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number"><%= @stats[:winning_picks] %></div>
+        <div class="stat-label">Winning Picks</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number"><%= @stats[:win_rate] %>%</div>
+        <div class="stat-label">Win Rate</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number"><%= @pending_review_count %></div>
+        <div class="stat-label">At Consensus</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUICK ACTIONS -->
+  <% if @tasks_needing_votes.any? %>
+    <section class="quick-actions">
+      <h2 class="dash-section-title">🎯 Tasks Needing Votes</h2>
+      <div style="position:relative;">
+        <div class="dot-bg-patch"></div>
+        <div class="quick-actions-grid">
+          <% @tasks_needing_votes.each do |task| %>
+            <div class="dash-task-card">
+              <div class="task-card-info">
+                <div class="task-card-method"><%= task.method_signature %></div>
+                <div class="task-card-votes">
+                  <%= task.votes.size %>/<%= DocumentationTask::CONSENSUS_VOTE_THRESHOLD %> votes
+                  <span class="progress-bar"><span class="progress-fill" style="width:<%= (task.votes.size.to_f / DocumentationTask::CONSENSUS_VOTE_THRESHOLD * 100).clamp(0, 100) %>%;"></span></span>
+                </div>
+              </div>
+              <%= link_to "Vote Now →", task_path(task), class: "vote-now-btn" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </section>
+  <% end %>
+
+  <!-- RECENT VOTING HISTORY -->
+  <% if @votes.any? %>
+    <section class="voting-history">
+      <h2 class="dash-section-title">📊 Your Recent Votes</h2>
+      <div class="history-card">
+        <div class="history-header">
+          <div>Method</div>
+          <div>Your Vote</div>
+          <div>Result</div>
+          <div>Date</div>
+        </div>
+        <% @votes.limit(10).each do |vote| %>
+          <div class="history-row">
+            <div class="history-method">
+              <%= link_to vote.documentation_task.method_signature, task_path(vote.documentation_task) %>
+            </div>
+            <div class="version-badge-cell">
+              <span class="version-badge version-<%= vote.draft_version.label %>">Version <%= vote.draft_version.label.upcase %></span>
+            </div>
+            <div class="result-cell">
+              <% if vote.draft_version.winner? %>
+                <span class="dash-winner-badge">✓ Winner!</span>
+              <% else %>
+                <span class="result-pending">—</span>
+              <% end %>
+            </div>
+            <div class="history-date"><%= vote.created_at.strftime("%b %-d, %Y") %></div>
+          </div>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <!-- ACHIEVEMENT CARD -->
+  <% if @stats[:winning_picks] > 0 %>
+    <section>
+      <div class="achievement">
+        <div class="achievement-icon">🏆</div>
+        <div class="achievement-text">
+          <h3>You've helped improve <%= @stats[:winning_picks] %> <%= "method".pluralize(@stats[:winning_picks]) %>!</h3>
+          <p>Your votes have contributed to better documentation. Keep going!</p>
+        </div>
+      </div>
+    </section>
+  <% end %>
+</div>

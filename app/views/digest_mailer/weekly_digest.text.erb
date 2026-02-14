@@ -1,0 +1,26 @@
+DocsTown Weekly Digest — <%= Date.current.strftime("%B %d, %Y") %>
+========================================================
+
+Hey <%= @user.github_username %>,
+
+Here's what happened in Rails documentation this week:
+
+  New Tasks for Voting: <%= @stats[:new_voting_tasks] %>
+  PRs Submitted: <%= @stats[:submitted_prs] %>
+  PRs Merged: <%= @stats[:merged_prs] %>
+
+<% if @voting_tasks.any? %>
+Open for Voting
+---------------
+<% @voting_tasks.each do |task| %>
+  * <%= task.method_signature %> (<%= task.votes.size %> votes)
+    <%= task_url(task) %>
+<% end %>
+<% end %>
+
+Browse all tasks: <%= tasks_url %>
+
+---
+You're receiving this because you opted in to the weekly digest.
+Unsubscribe: <%= unsubscribe_url(token: @unsubscribe_token) %>
+Manage preferences: <%= profile_url %>

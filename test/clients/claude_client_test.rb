@@ -28,7 +28,7 @@ class ClaudeClientTest < ActiveSupport::TestCase
         headers: { "Content-Type" => "application/json" }
       )
 
-    error = assert_raises(RuntimeError) { @client.generate(prompt: "test") }
+    error = assert_raises(LlmClient::TransientError) { @client.generate(prompt: "test") }
     assert_match(/Claude API error/, error.message)
   end
 end

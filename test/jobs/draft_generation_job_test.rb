@@ -47,10 +47,19 @@ class DraftGenerationJobTest < ActiveSupport::TestCase
     assert_equal 0, @task.draft_versions.count
   end
 
-  test "skips tasks that already have drafts" do
-    create(:draft_version, documentation_task: @task, label: :a)
+  test "skips tasks that already have 3 drafts" do
+    create(:draft_version, documentation_task: @task, label: :a, provider: "claude")
+    create(:draft_version, documentation_task: @task, label: :b, provider: "openai")
+    create(:draft_version, documentation_task: @task, label: :c, provider: "kimi")
     DraftGenerationJob.perform_now(@task.id)
-    assert_equal 1, @task.draft_versions.count
+    assert_equal 3, @task.draft_versions.count
+  end
+
+  test "fills in missing drafts for partially completed tasks" do
+    create(:draft_version, documentation_task: @task, label: :a, provider: "claude")
+    DraftGenerationJob.perform_now(@task.id)
+    assert_equal 3, @task.draft_versions.count
+    assert @task.reload.voting?
   end
 
   test "each draft stores the prompt used" do

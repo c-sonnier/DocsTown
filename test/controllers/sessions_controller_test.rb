@@ -53,6 +53,6 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   test "failure redirects with error message" do
     get "/auth/failure", params: { message: "invalid_credentials" }
     assert_redirected_to root_path
-    assert_equal "Authentication failed: Invalid credentials", flash[:alert]
+    assert_equal "Authentication failed.", flash[:alert]
   end
 end
