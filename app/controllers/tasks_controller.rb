@@ -20,14 +20,9 @@ class TasksController < ApplicationController
   private
 
   def filter_by_status(tasks)
-    if params[:status].present? && params[:status] != "all"
-      return tasks unless DocumentationTask.statuses.key?(params[:status])
-      tasks.by_status(params[:status])
-    elsif params[:status] == "all"
-      tasks
-    else
-      tasks.by_status(:voting)
-    end
+    return tasks if params[:status] == "all"
+    status = params[:status].presence || "voting"
+    DocumentationTask.statuses.key?(status) ? tasks.by_status(status) : tasks.by_status(:voting)
   end
 
   def sort_tasks(tasks)

@@ -1,25 +1,14 @@
 class PrStatusCheckJob < ApplicationJob
   queue_as :default
 
-  def perform(task_id = nil)
-    if task_id
-      process_task(task_id)
-    else
-      tasks = DocumentationTask.submitted.where(pr_status: :open).where.not(pr_url: nil)
-      tasks.find_each do |task|
-        PrStatusCheckJob.perform_later(task.id)
-      end
-    end
-  end
-
-  private
-
-  def process_task(task_id)
+  def perform(task_id)
     task = DocumentationTask.find(task_id)
     check_pr_status(task)
   rescue Octokit::Error, Faraday::Error => e
     Rails.logger.error("PrStatusCheckJob: failed to check task #{task_id}: #{e.message}")
   end
+
+  private
 
   def check_pr_status(task)
     pr_number = extract_pr_number(task.pr_url)

@@ -4,7 +4,7 @@ class WeeklyDigestJob < ApplicationJob
   BATCH_SIZE = 100
 
   def perform
-    stats = DigestMailer.compute_weekly_stats
+    stats = DocumentationTask.weekly_stats
     User.where(digest_opted_in: true)
         .where.not(email: [ nil, "" ])
         .where("last_digest_sent_at IS NULL OR last_digest_sent_at < ?", 6.days.ago)

@@ -40,26 +40,6 @@ class LlmClient
 
   private
 
-  def api_url
-    raise NotImplementedError
-  end
-
-  def request_headers
-    raise NotImplementedError
-  end
-
-  def request_body(prompt)
-    raise NotImplementedError
-  end
-
-  def extract_content(body)
-    raise NotImplementedError
-  end
-
-  def provider_name
-    raise NotImplementedError
-  end
-
   def backoff_delay(attempt)
     return 0 if Rails.env.test?
     5 ** (attempt - 1)

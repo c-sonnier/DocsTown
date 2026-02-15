@@ -1,13 +1,4 @@
 class DigestMailer < ApplicationMailer
-  def self.compute_weekly_stats
-    one_week_ago = 1.week.ago
-    {
-      new_voting_tasks: DocumentationTask.voting.where("created_at >= ? OR updated_at >= ?", one_week_ago, one_week_ago).count,
-      submitted_prs: DocumentationTask.submitted.where(updated_at: one_week_ago..).count,
-      merged_prs: DocumentationTask.merged.where(updated_at: one_week_ago..).count
-    }
-  end
-
   def weekly_digest(user, stats)
     @user = user
     @stats = stats

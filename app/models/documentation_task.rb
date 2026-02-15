@@ -19,6 +19,15 @@ class DocumentationTask < ApplicationRecord
   scope :submitted, -> { where(status: :submitted) }
   scope :merged, -> { where(status: :merged) }
 
+  def self.weekly_stats
+    one_week_ago = 1.week.ago
+    {
+      new_voting_tasks: voting.where("created_at >= ? OR updated_at >= ?", one_week_ago, one_week_ago).count,
+      submitted_prs: submitted.where(updated_at: one_week_ago..).count,
+      merged_prs: merged.where(updated_at: one_week_ago..).count
+    }
+  end
+
   validates :method_signature, presence: true, uniqueness: { scope: :project_id }
   validates :source_file_path, presence: true
   validates :source_code, presence: true

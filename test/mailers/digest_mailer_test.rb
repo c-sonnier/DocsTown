@@ -8,7 +8,7 @@ class DigestMailerTest < ActionMailer::TestCase
 
   test "weekly_digest includes stats and links" do
     task = create(:documentation_task, project: @project, status: :voting)
-    stats = DigestMailer.compute_weekly_stats
+    stats = DocumentationTask.weekly_stats
     email = DigestMailer.weekly_digest(@user, stats)
 
     assert_emails 1 do
@@ -24,7 +24,7 @@ class DigestMailerTest < ActionMailer::TestCase
 
   test "weekly_digest includes unsubscribe headers" do
     create(:documentation_task, project: @project, status: :voting)
-    stats = DigestMailer.compute_weekly_stats
+    stats = DocumentationTask.weekly_stats
     email = DigestMailer.weekly_digest(@user, stats)
     email.deliver_now
 
@@ -33,7 +33,7 @@ class DigestMailerTest < ActionMailer::TestCase
   end
 
   test "weekly_digest not sent when no activity" do
-    stats = DigestMailer.compute_weekly_stats
+    stats = DocumentationTask.weekly_stats
     email = DigestMailer.weekly_digest(@user, stats)
     assert email.message.is_a?(ActionMailer::Base::NullMail), "Should not send when no activity"
   end
@@ -41,7 +41,7 @@ class DigestMailerTest < ActionMailer::TestCase
   test "weekly_digest shows merged PR count" do
     create(:documentation_task, project: @project, status: :merged, updated_at: 2.days.ago)
     create(:documentation_task, project: @project, status: :voting)
-    stats = DigestMailer.compute_weekly_stats
+    stats = DocumentationTask.weekly_stats
     email = DigestMailer.weekly_digest(@user, stats)
     email.deliver_now
 
