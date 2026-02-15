@@ -28,9 +28,10 @@ class DocumentationTask < ApplicationRecord
     }
   end
 
-  validates :method_signature, presence: true, uniqueness: { scope: :project_id }
-  validates :source_file_path, presence: true
+  validates :method_signature, presence: true, uniqueness: { scope: :project_id }, length: { maximum: 500 }
+  validates :source_file_path, presence: true, length: { maximum: 1000 }
   validates :source_code, presence: true
+  validates :reviewer_note, length: { maximum: 2000 }, allow_blank: true
 
   # State transitions
 
