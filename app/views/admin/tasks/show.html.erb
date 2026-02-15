@@ -71,7 +71,7 @@
       <div class="winning-doc">
         <div class="winning-doc-badge">&#127942; Winner &mdash; Version <%= @winning_version.label.upcase %></div>
         <div style="font-size: 15px; line-height: 1.7; color: var(--pg-fg);">
-          <%= simple_format(@winning_version.content) %>
+          <%= simple_format(h(@winning_version.content)) %>
         </div>
       </div>
     <% end %>
@@ -98,7 +98,7 @@
                 <span style="font-size: 12px; opacity: 0.85;"><%= version.votes_count %> votes</span>
               </div>
               <div style="padding: 16px; font-size: 13px; line-height: 1.6; color: var(--pg-muted-fg); max-height: 200px; overflow-y: auto;">
-                <%= simple_format(truncate(version.content, length: 300)) %>
+                <%= simple_format(h(truncate(version.content, length: 300))) %>
               </div>
             </div>
           <% end %>

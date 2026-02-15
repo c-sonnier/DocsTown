@@ -11,7 +11,7 @@ class DigestMailer < ApplicationMailer
   def weekly_digest(user, stats)
     @user = user
     @stats = stats
-    @voting_tasks = DocumentationTask.voting.newest.limit(10)
+    @voting_tasks = DocumentationTask.voting.newest.includes(:votes).limit(10)
 
     return if no_activity?
 

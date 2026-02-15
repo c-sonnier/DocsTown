@@ -86,7 +86,7 @@
           </div>
 
           <div class="version-card-body">
-            <%= simple_format(version.content) %>
+            <%= simple_format(h(version.content)) %>
           </div>
 
           <% if @task.voting? %>

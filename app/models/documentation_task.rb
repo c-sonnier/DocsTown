@@ -31,9 +31,9 @@ class DocumentationTask < ApplicationRecord
   end
 
   def finalize_consensus!
-    raise InvalidTransition unless voting?
-    raise "No consensus" unless consensus_reached?
-    transaction do
+    with_lock do
+      raise InvalidTransition unless voting?
+      raise "No consensus" unless consensus_reached?
       leading_version.update!(winner: true)
       update!(status: :pending_review)
     end
@@ -99,6 +99,7 @@ class DocumentationTask < ApplicationRecord
 
   def leading_version_percentage(total = votes.count)
     return 0 if total.zero?
+    return 0 unless leading_version
     (leading_version.votes_count.to_f / total * 100).round(1)
   end
 
