@@ -88,6 +88,7 @@ production:
   primary: &primary_production
     <<: *default
     database: docs_town_production
+    host: <%= ENV.fetch("DB_HOST", "localhost") %>
     username: docs_town
     password: <%= ENV["DOCS_TOWN_DATABASE_PASSWORD"] %>
   cache:

@@ -1,0 +1,29 @@
+services:
+  web:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
+      DB_HOST: db
+      DOCS_TOWN_DATABASE_PASSWORD: password
+      SOLID_QUEUE_IN_PUMA: true
+
+  db:
+    image: postgres:17
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: docs_town
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docs_town"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
