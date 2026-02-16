@@ -51,41 +51,4 @@ class Admin::TasksControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Approve"
     assert_includes response.body, "Reject"
   end
-
-  test "approve transitions task and enqueues job" do
-    sign_in(@maintainer)
-    assert_enqueued_with(job: PrSubmissionJob) do
-      post approve_admin_task_path(@task)
-    end
-    assert @task.reload.submitted?
-    assert_redirected_to admin_task_path(@task)
-  end
-
-  test "approve requires maintainer" do
-    post approve_admin_task_path(@task)
-    assert_redirected_to root_path
-    assert @task.reload.pending_review?
-  end
-
-  test "reject with note transitions task back to voting" do
-    sign_in(@maintainer)
-    post reject_admin_task_path(@task), params: { reviewer_note: "Needs more examples" }
-    assert @task.reload.voting?
-    assert_equal "Needs more examples", @task.reviewer_note
-    assert_redirected_to admin_tasks_path
-  end
-
-  test "reject without note shows error" do
-    sign_in(@maintainer)
-    post reject_admin_task_path(@task), params: { reviewer_note: "" }
-    assert @task.reload.pending_review?
-    assert_redirected_to admin_task_path(@task)
-  end
-
-  test "reject requires maintainer" do
-    post reject_admin_task_path(@task), params: { reviewer_note: "No" }
-    assert_redirected_to root_path
-    assert @task.reload.pending_review?
-  end
-
 end

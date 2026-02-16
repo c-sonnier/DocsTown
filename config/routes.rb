@@ -19,11 +19,9 @@ Rails.application.routes.draw do
   end
 
   namespace :admin do
-    resources :tasks, only: [ :index, :show ] do
-      member do
-        post :approve
-        post :reject
-      end
+    resources :tasks, only: %i[ index show ] do
+      resource :approval, only: :create
+      resource :rejection, only: :create
     end
   end
 

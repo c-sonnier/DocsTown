@@ -113,7 +113,7 @@
           Admin Decision
         </div>
         <div class="flex gap-4 justify-center mb-4" data-controller="rejection-toggle">
-          <%= button_to approve_admin_task_path(@task), class: "btn-pg btn-approve" do %>
+          <%= button_to admin_task_approval_path(@task), class: "btn-pg btn-approve" do %>
             &#9989; Approve & Submit PR
           <% end %>
           <button type="button" class="btn-pg btn-reject" data-action="click->rejection-toggle#toggle">
@@ -122,7 +122,7 @@
 
           <%# Rejection Note Area %>
           <div data-rejection-toggle-target="area" style="display: none; width: 100%; margin-top: 24px; padding-top: 24px; border-top: 2px dashed var(--pg-border-color);">
-            <%= form_with url: reject_admin_task_path(@task), method: :post, style: "width: 100%;" do |f| %>
+            <%= form_with url: admin_task_rejection_path(@task), method: :post, style: "width: 100%;" do |f| %>
               <label style="display: block; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 10px;">
                 Rejection Note
               </label>

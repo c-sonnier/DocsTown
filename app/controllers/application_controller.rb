@@ -20,6 +20,6 @@ class ApplicationController < ActionController::Base
   def require_maintainer
     require_login
     return if performed?
-    redirect_to root_path, alert: "Not authorized" unless Current.user.maintainer? || Current.user.admin?
+    redirect_to root_path, alert: "Not authorized" unless Current.user.can_administer?
   end
 end

@@ -16,8 +16,24 @@ class DocumentationTask < ApplicationRecord
   scope :most_votes, -> {
     left_joins(:votes).group(:id).order(Arel.sql("COUNT(votes.id) DESC"))
   }
-  scope :submitted, -> { where(status: :submitted) }
-  scope :merged, -> { where(status: :merged) }
+
+  def self.site_stats
+    Rails.cache.fetch("site_stats", expires_in: 1.hour) do
+      submitted_val = statuses[:submitted]
+      merged_val = statuses[:merged]
+      counts = pick(
+        Arel.sql("COUNT(*)"),
+        Arel.sql("COUNT(*) FILTER (WHERE status IN (#{submitted_val}, #{merged_val}))"),
+        Arel.sql("COUNT(*) FILTER (WHERE status = #{merged_val})")
+      )
+      {
+        tasks_created: counts[0],
+        votes_cast: Vote.count,
+        prs_submitted: counts[1],
+        prs_merged: counts[2]
+      }
+    end
+  end
 
   def self.weekly_stats
     one_week_ago = 1.week.ago
